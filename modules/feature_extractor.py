@@ -96,10 +96,20 @@ class FeatureExtractor:
         """
         Processa todas as pastas de imagens no diretório base.
         """
-        for folder in Path(IMAGES_DIR).iterdir():
-            if folder.is_dir():
-                output_file = RESPONSES_DIR / f"{folder.name}.json"
-                if output_file.exists():
-                    print(f"⏩ Pulando {folder.name}, já existe {output_file}")
-                    continue
-                self.extract_features(folder)
+        folders = [f for f in Path(IMAGES_DIR).iterdir() if f.is_dir()]
+        total_folders = len(folders)
+        
+        # Conta respostas já existentes
+        existing_responses = len([f for f in Path(RESPONSES_DIR).glob("*.json") if f.is_file()]) if RESPONSES_DIR.exists() else 0
+        processed = existing_responses
+        
+        print(f"📁 Total: {total_folders} | Já processadas: {existing_responses}")
+        
+        for folder in folders:
+            output_file = RESPONSES_DIR / f"{folder.name}.json"
+            if output_file.exists():
+                continue
+            
+            processed += 1
+            print(f"🔄 [{processed}/{total_folders}] Processando {folder.name}...")
+            self.extract_features(folder)
