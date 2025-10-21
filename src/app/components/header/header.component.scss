@@ -1,0 +1,47 @@
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #b1afaf;
+    &.default-style {
+        background-color: transparent;
+    }
+}
+
+.title {
+    color: white;
+    cursor: pointer;
+    font-style: italic;
+    font-size: 50px;
+    text-align: center;
+    padding-right: 45px;
+    flex-grow: 1;
+}
+
+.back {
+    cursor: pointer;
+    border: 2px solid white;
+    border-radius: 50%;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+    &.default-style {
+        visibility: hidden;
+    }
+}
+
+.back:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 30px;
+    }
+}

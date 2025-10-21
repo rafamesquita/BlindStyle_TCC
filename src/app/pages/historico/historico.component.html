@@ -1,0 +1,12 @@
+<app-header title="Histórico"></app-header>
+<div class="historico">
+    <!-- Box com as roupas -->
+     <div class="grid-container">
+        <div *ngFor="let roupa of clothes">
+            <app-roupa-hist [data]="roupa"></app-roupa-hist>
+        </div>
+    </div>
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner"></div>
+    </div>
+</div>
