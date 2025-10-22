@@ -1,21 +1,20 @@
 import { Component } from '@angular/core';
-import { HeaderComponent } from "../../components/header/header.component";
 import { Router } from '@angular/router';
 import { TextToSpeechService } from './../../services/text-speech/text-to-speech.service';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-menu',
   standalone: true,
-  imports: [HeaderComponent],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  imports: [],
+  templateUrl: './menu.component.html',
+  styleUrl: './menu.component.scss'
 })
-export class HomeComponent {
+export class MenuComponent {
 
   constructor(
       private router: Router,
       private ttsService: TextToSpeechService,
-    ) {}
+  ) {}
 
   goTo(route: string) {
     this.router.navigate([`/${route}`]);
@@ -24,4 +23,5 @@ export class HomeComponent {
   onSpeak(text: string): void {
     this.ttsService.speak(text);
   }
+
 }

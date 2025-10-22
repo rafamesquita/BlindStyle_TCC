@@ -1,0 +1,12 @@
+.container {
+    display: flex;
+    border-bottom: 2px;
+    background-color: transparent;
+}
+
+button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
