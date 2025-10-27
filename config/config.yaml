@@ -1,0 +1,110 @@
+# ============================================================================
+# MCN MODEL TRAINING CONFIGURATION
+# ============================================================================
+# This file contains all hyperparameters and settings for training the
+# Multi-Correlation Network (MCN) for outfit compatibility prediction.
+#
+# 🔧 TO CHANGE NUMBER OF EPOCHS FOR FULL TRAINING:
+#    Modify the 'num_epochs' parameter below (currently set to 5 for testing)
+#    Recommended for full training: 50-100 epochs
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# PATHS
+# ----------------------------------------------------------------------------
+data_path: './data/processed'      # Path to processed dataset
+checkpoint_dir: './checkpoints'    # Where to save model checkpoints
+log_dir: './logs'                  # TensorBoard logs directory
+
+# ----------------------------------------------------------------------------
+# DATASET CONFIGURATION
+# ----------------------------------------------------------------------------
+max_items: 5                       # Maximum items per outfit (for padding)
+train_ratio: 0.7                   # Training set proportion (70%)
+val_ratio: 0.15                    # Validation set proportion (15%)
+                                   # Test set will be remaining 15%
+seed: 42                           # Random seed for reproducibility
+
+# ----------------------------------------------------------------------------
+# MODEL ARCHITECTURE
+# ----------------------------------------------------------------------------
+embed_input_size: 96               # Input embedding dimension (from ChromaDB)
+embed_proj_size: 1000              # Projection dimension (as per MCN paper)
+dropout: 0.3                       # Dropout rate for regularization
+
+# ----------------------------------------------------------------------------
+# TRAINING PARAMETERS
+# ----------------------------------------------------------------------------
+# ⚠️ IMPORTANT: CHANGE 'num_epochs' HERE FOR FULL TRAINING
+# Current value is set to 5 for quick testing/validation
+# For full training, recommended values are:
+#   - Quick training: 20-30 epochs
+#   - Full training: 50-100 epochs
+#   - Extensive training: 100-200 epochs
+# ============================================================================
+num_epochs: 50                      # 🔧 CHANGE THIS FOR FULL TRAINING
+# ============================================================================
+
+batch_size: 32                     # Batch size for training
+eval_batch_size: 64                # Batch size for evaluation (can be larger)
+num_workers: 0                     # DataLoader workers (0 for Windows)
+
+# ----------------------------------------------------------------------------
+# OPTIMIZATION
+# ----------------------------------------------------------------------------
+learning_rate: 0.001               # Initial learning rate (Adam optimizer)
+weight_decay: 0.0001               # L2 regularization weight
+lr_step_size: 10                   # Reduce LR every N epochs
+lr_gamma: 0.5                      # Learning rate decay factor
+
+# ----------------------------------------------------------------------------
+# EARLY STOPPING
+# ----------------------------------------------------------------------------
+early_stopping_patience: 10        # Stop if no improvement for N epochs
+                                   # Set to -1 to disable early stopping
+
+# ----------------------------------------------------------------------------
+# CHECKPOINTING
+# ----------------------------------------------------------------------------
+save_every_n_epochs: 10            # Save checkpoint every N epochs
+keep_best_only: false              # If true, only keep best model
+
+# ----------------------------------------------------------------------------
+# HARDWARE
+# ----------------------------------------------------------------------------
+device: 'auto'                     # 'cuda', 'cpu', or 'auto' (auto-detect)
+mixed_precision: false             # Use mixed precision training (for GPU)
+
+# ----------------------------------------------------------------------------
+# LOGGING
+# ----------------------------------------------------------------------------
+log_interval: 10                   # Log metrics every N batches
+verbose: true                      # Print detailed progress
+
+# ============================================================================
+# NOTES FOR TRAINING
+# ============================================================================
+# 1. For testing/validation (quick run):
+#    - Set num_epochs: 5
+#    - Expected time: ~5-10 minutes on CPU, ~2-3 minutes on GPU
+#
+# 2. For full training (production):
+#    - Set num_epochs: 50-100
+#    - Expected time: ~1-2 hours on CPU, ~20-40 minutes on GPU
+#
+# 3. Monitor training:
+#    - Use TensorBoard: tensorboard --logdir=./logs
+#    - Watch for overfitting: val_loss should decrease with train_loss
+#    - Best model is automatically saved based on validation AUC
+#
+# 4. Hardware considerations:
+#    - CPU training is slower but works fine for this dataset size
+#    - GPU training is recommended if available (5-10x faster)
+#    - Mixed precision can speed up GPU training by ~30%
+#
+# 5. Hyperparameter tuning:
+#    - Start with these default values
+#    - If overfitting: increase dropout or weight_decay
+#    - If underfitting: decrease dropout or increase model capacity
+#    - If training is unstable: reduce learning_rate
+# ============================================================================
