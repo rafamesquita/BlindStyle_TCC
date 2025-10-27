@@ -33,6 +33,10 @@ commands.md
 TASKS.md
 memory-bank/*
 custom-instructions/*
+logs/*
+checkpoints/*
+data/*
+results/*
 
 # vim temporary files
 *~
