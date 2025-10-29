@@ -29,8 +29,7 @@ export class HistoricoComponent implements OnInit {
         this.clothes = res
         this.loading = false
       },
-      error: (error)=>{
-        console.error(error)
+      error: ()=>{
         this.loading = false
       }
     })

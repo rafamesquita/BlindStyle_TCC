@@ -45,14 +45,10 @@ export class ModalRoupaComponent implements OnInit{
     this.ApiService.getSpecificClothe(this.data.id).subscribe({
       next: (res)=>{
         this.clothe = res
-        console.log(this.clothe)
         setTimeout(() => {
           this.loading = false 
         }, 2000);
         
-      },
-      error: (error)=>{
-        console.error(error)
       }
     })
   }
@@ -84,9 +80,6 @@ export class ModalRoupaComponent implements OnInit{
     let imageUrl = this.base64
     this.ApiService.postItems(name, description, imageUrl).subscribe({
       next: (res)=>{
-      },
-      error: (error)=>{
-        console.error(error)
       }
     })
     this.closeModal();
@@ -115,9 +108,6 @@ export class ModalRoupaComponent implements OnInit{
     this.ApiService.postSuggestion(itemId).subscribe({
       next: (res)=>{
         this.getSuggestion(itemId)
-      },
-      error: (error)=>{
-        console.error(error)
       }
     })
   }

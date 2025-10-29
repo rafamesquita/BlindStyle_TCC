@@ -40,8 +40,6 @@ export class RoupaHistComponent {
     const container = document.getElementById('imageContainer');
     if (container) {
         container.appendChild(imgElement);
-    } else {
-        console.error("Elemento com ID 'imageContainer' não encontrado.");
     }
   }
 

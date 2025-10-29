@@ -1,7 +1,7 @@
 .container {
     display: flex;
     flex-direction: column;
-    background: #7D7D7D;
+    background: #808080;
     height: 100vh;
 }
 
@@ -15,17 +15,27 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     border-top-left-radius: 48px;
     border-top-right-radius: 48px;
     background-color: #272f3d;
     height: 100%;
+    overflow-y: auto;
 }
 
 button {
+    all: unset;
+    border-radius: 12px;
+    background-color: #808080;
+    color: #ffffff;
     margin: 10px;
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
+}
+
+button:hover {
+    background-color: #747f96;
 }
 
 .instructions {

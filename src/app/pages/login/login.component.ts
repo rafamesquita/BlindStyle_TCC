@@ -28,11 +28,9 @@ export class LoginComponent {
   home(): void {
     this.authService.login(this.username, this.password).subscribe(
       (response) => {
-        console.log('Usuário logado com sucesso');
         this.router.navigate(['/foto']);
       },
       (error) => {
-        console.error('Erro no login', error);
         this.errorMessage = error?.error?.detail || 'Erro desconhecido';
       }
     );

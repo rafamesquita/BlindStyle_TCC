@@ -14,9 +14,10 @@ import { TextToSpeechService } from './../../services/text-speech/text-to-speech
   styleUrl: './cadastro.component.scss'
 })
 export class CadastroComponent {
-  user: any
-  username: string = ''
-  password: string = ''
+
+  user: any;
+  username: string = '';
+  password: string = '';
 
   constructor(
     private router: Router,
@@ -35,12 +36,8 @@ export class CadastroComponent {
   registerUser(username: string, password: string) {
     this.ApiService.registerUser(username, password).subscribe({
       next: (res)=>{
-        this.user = res
-        console.log(this.user);
+        this.user = res;
         this.router.navigate(['/login']);
-      },
-      error: (error)=>{
-        console.error(error)
       }
     })
   }

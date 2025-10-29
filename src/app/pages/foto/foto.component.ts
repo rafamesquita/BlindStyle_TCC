@@ -1,27 +1,31 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy  } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnDestroy  } from '@angular/core';
 import { HeaderComponent } from "../../components/header/header.component";
 import { MenuComponent } from "../../components/menu/menu.component";
 import { CommonModule } from '@angular/common';
 import { ApiService } from './../../services/api.service';
-import { ModalRoupaComponent } from '../../components/modal-roupa/modal-roupa.component';
 import { TextToSpeechService } from './../../services/text-speech/text-to-speech.service';
 
 @Component({
   selector: 'app-foto',
   standalone: true,
-  imports: [HeaderComponent, MenuComponent],
+  imports: [
+    HeaderComponent,
+    MenuComponent,
+    CommonModule
+  ],
   templateUrl: './foto.component.html',
   styleUrl: './foto.component.scss'
 })
-export class FotoComponent {
+export class FotoComponent implements OnDestroy{
 
-  prediction: any
+  description: any
   @ViewChild('videoElement') videoElement: ElementRef<HTMLVideoElement> | undefined;
   @ViewChild('canvasElement') canvasElement!: ElementRef;
+  @ViewChild('fileInput') fileInput!: ElementRef;
   
   isCameraActive = false;  // Para controlar se a câmera está ativa
-  errorMessage: string | null = null;
   photoBase64: string | null = null;
+  errorMessage: string | null = null;
   loading: boolean = false
   modal: boolean = false
   
@@ -30,55 +34,38 @@ export class FotoComponent {
     private ttsService: TextToSpeechService,
   ) {}
 
-  startCameraFrontal(): void {
+  startCamera(type: 'frontal' | 'traseira'): void {
     this.errorMessage = null;
 
-    // Verificar se o navegador suporta a API de getUserMedia
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          // Verifica se o vídeo foi encontrado
-          if (this.videoElement) {
-            this.videoElement.nativeElement.srcObject = stream;
-            this.isCameraActive = true;  // Marca a câmera como ativa
-          }
-        })
-        .catch((error) => {
-          // Exibe a mensagem de erro, se algo der errado
-          this.isCameraActive = false;
-          this.errorMessage = 'Não foi possível acessar a câmera. Erro: ' + error.message;
-        });
-    } else {
-      this.errorMessage = 'Seu navegador não suporta acesso à câmera.';
+    // Encerra qualquer stream anterior
+    if (this.videoElement?.nativeElement?.srcObject) {
+      const oldStream = this.videoElement.nativeElement.srcObject as MediaStream;
+      oldStream.getTracks().forEach(track => track.stop());
+      this.videoElement.nativeElement.srcObject = null;
     }
-  }
 
-  startCameraTraseira(): void {
-    this.errorMessage = null;
-  
-    // Verificar se o navegador suporta a API de getUserMedia
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { exact: "environment" }, // Solicita a câmera traseira
-        }
-      })
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      this.errorMessage = 'Seu navegador não suporta acesso à câmera.';
+      return;
+    }
+
+    const constraints: MediaStreamConstraints = {
+      video: { facingMode: type === 'traseira' ? 'environment' : 'user' }
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
       .then(stream => {
-        // Verifica se o vídeo foi encontrado
         if (this.videoElement) {
           this.videoElement.nativeElement.srcObject = stream;
-          this.isCameraActive = true;  // Marca a câmera como ativa
+          this.videoElement.nativeElement.play().catch(() => {});
+          this.isCameraActive = true;
         }
       })
-      .catch((error) => {
-        // Exibe a mensagem de erro, se algo der errado
+      .catch(async () => {
+        this.errorMessage = 'Não foi possível acessar a câmera. ';
         this.isCameraActive = false;
-        this.errorMessage = 'Não foi possível acessar a câmera. Erro: ' + error.message;
       });
-    } else {
-      this.errorMessage = 'Seu navegador não suporta acesso à câmera.';
-    }
-  }  
+  }
 
   // Método para parar a câmera
   stopCamera(): void {
@@ -92,22 +79,8 @@ export class FotoComponent {
     }
   }
 
-  getDescription(img: string) {
-    this.ApiService.getDescription(img).subscribe({
-      next: (res)=>{
-        this.prediction = res
-        console.log('Descrição: ', this.prediction);
-          this.openModal()
-          this.loading = false
-      },
-      error: (error)=>{
-        console.error(error)
-      }
-    })
-  }
-
-   // Método para tirar uma foto e converter para base64
-   takePhoto(): void {
+  // Método para tirar uma foto e converter para base64
+  takePhoto(): void {
     if (this.isCameraActive && this.videoElement && this.canvasElement) {
       const video = this.videoElement.nativeElement as HTMLVideoElement;
       const canvas = this.canvasElement.nativeElement as HTMLCanvasElement;
@@ -122,12 +95,49 @@ export class FotoComponent {
 
       // Converter o conteúdo do canvas para base64
       this.photoBase64 = canvas.toDataURL('image/png');
-      
-      console.log('Foto em Base64: ', this.photoBase64);
+
       video.pause();
       this.getDescription(this.photoBase64);
       this.loading = true
     }
+  }
+
+  // Abre a galeria ao clicar no botão
+  openGallery(): void {
+    this.fileInput.nativeElement.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (file) {
+      // Verifica se é imagem
+      if (!file.type.startsWith('image/')) {
+        alert('Selecione apenas arquivos de imagem.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.photoBase64 = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  getDescription(img: string) {
+    this.ApiService.getDescription(img).subscribe({
+      next: (res)=>{
+        this.description = res
+          this.openModal();
+          this.loading = false
+          this.stopCamera();
+      },
+      error: ()=>{
+        this.stopCamera();
+      }
+    })
   }
 
   openModal() {

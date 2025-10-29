@@ -8,7 +8,6 @@ export class TextToSpeechService {
 
   speak(text: string): void {
     if (this.synth.speaking) {
-      console.error('Speech synthesis is already in progress.');
       return;
     }
     const utterance = new SpeechSynthesisUtterance(text);
