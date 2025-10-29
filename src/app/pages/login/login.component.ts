@@ -29,7 +29,7 @@ export class LoginComponent {
     this.authService.login(this.username, this.password).subscribe(
       (response) => {
         console.log('Usuário logado com sucesso');
-        this.router.navigate(['/home']);
+        this.router.navigate(['/foto']);
       },
       (error) => {
         console.error('Erro no login', error);

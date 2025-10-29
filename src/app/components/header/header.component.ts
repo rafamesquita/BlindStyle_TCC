@@ -20,7 +20,7 @@ export class HeaderComponent {
   }
 
   back(){
-    this.router.navigate(['/home']);
+    this.router.navigate(['/foto']);
   }
 
 }
