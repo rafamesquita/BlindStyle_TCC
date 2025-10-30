@@ -1,7 +1,12 @@
 import { Component, ViewChild, ElementRef, OnDestroy  } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+//Components
 import { HeaderComponent } from "../../components/header/header.component";
 import { MenuComponent } from "../../components/menu/menu.component";
-import { CommonModule } from '@angular/common';
+import { ModalRoupaComponent } from '../../components/modal-roupa/modal-roupa.component';
+
+//Services
 import { ApiService } from './../../services/api.service';
 import { TextToSpeechService } from './../../services/text-speech/text-to-speech.service';
 
@@ -11,14 +16,15 @@ import { TextToSpeechService } from './../../services/text-speech/text-to-speech
   imports: [
     HeaderComponent,
     MenuComponent,
-    CommonModule
+    CommonModule,
+    ModalRoupaComponent,
   ],
   templateUrl: './foto.component.html',
   styleUrl: './foto.component.scss'
 })
 export class FotoComponent implements OnDestroy{
 
-  description: any
+  description: any;
   @ViewChild('videoElement') videoElement: ElementRef<HTMLVideoElement> | undefined;
   @ViewChild('canvasElement') canvasElement!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
@@ -26,8 +32,8 @@ export class FotoComponent implements OnDestroy{
   isCameraActive = false;  // Para controlar se a câmera está ativa
   photoBase64: string | null = null;
   errorMessage: string | null = null;
-  loading: boolean = false
-  modal: boolean = false
+  loading: boolean = false;
+  modal: boolean = false;
   
   constructor(
     private ApiService: ApiService,
@@ -46,6 +52,9 @@ export class FotoComponent implements OnDestroy{
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       this.errorMessage = 'Seu navegador não suporta acesso à câmera.';
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 2000);
       return;
     }
 
@@ -63,6 +72,9 @@ export class FotoComponent implements OnDestroy{
       })
       .catch(async () => {
         this.errorMessage = 'Não foi possível acessar a câmera. ';
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 2000);
         this.isCameraActive = false;
       });
   }

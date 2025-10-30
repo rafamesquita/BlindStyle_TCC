@@ -11,18 +11,17 @@ import { TextToSpeechService } from './../../services/text-speech/text-to-speech
   styleUrl: './modal-roupa.component.scss'
 })
 export class ModalRoupaComponent implements OnInit{
-  @Input() data: any
-  @Input() img: any
-  @Input() modal: boolean = true
+  @Input() data: any;
+  @Input() img: any;
+  @Input() modal: boolean = true;
   @Output() close: EventEmitter<void> = new EventEmitter<void>();
-  toggle: Boolean = false
-  loading: Boolean = true
-  suggestion: any
-  base64: any
+  toggle: Boolean = false;
+  loading: Boolean = true;
+  suggestion: any;
+  base64: any;
+  clothe: any;
   
   constructor(private ApiService: ApiService, private ttsService: TextToSpeechService) {}
-
-  clothe: any
 
   ngOnInit(): void {
     if (this.img) {

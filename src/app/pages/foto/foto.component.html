@@ -1,7 +1,7 @@
 <div class="container">
 
     <div class="header">
-        <app-header title="BlindStyle"></app-header>
+        <app-header></app-header>
         <app-menu></app-menu>
     </div>
 
@@ -68,4 +68,8 @@
         <div class="spinner"></div>
     </div>
 
+</div>
+
+<div *ngIf="modal" class="backdrop">
+    <app-modal-roupa [data]="description" [img]="this.photoBase64" [modal]="modal" (close)="openModal()"></app-modal-roupa>
 </div>
