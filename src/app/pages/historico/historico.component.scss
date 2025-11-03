@@ -23,9 +23,11 @@
   overflow-y: auto;
 }
 
-
 .grid-container {
+  padding-top: 20px;
+  padding-bottom: 10px;
   display: grid;
+  overflow: auto;
   gap: 20px;
   width: 100%;
   max-width: 900px;
@@ -34,6 +36,10 @@
   @media (max-width: 650px) {
     grid-template-columns: 1fr;
   }
+}
+
+.grid-container::-webkit-scrollbar {
+  width: 0px;
 }
 
 /* Overlay de Loading */
