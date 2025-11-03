@@ -18,17 +18,9 @@
             </div> 
         </div>
         
-        <div *ngIf="this.img" class="btn">
-            <!-- <app-btn label="Salvar no Histórico" from="cam" hist="hist" (click)="this.save()"></app-btn> -->
-        </div>
-        <div class="suggestion" *ngIf="!this.img" (click)="this.toggleSuggestion();$event.stopPropagation()">
-            <span style="margin-right: 4px;">Sugestão</span>
-            <svg *ngIf="!this.toggle" width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 8.5L12 16.5L20 8.5" stroke="#1A1E1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <svg *ngIf="this.toggle" width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 16.5L12 8.5L20 16.5" stroke="#1A1E1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>                    
+        <div class="btn">
+            <button (click)="this.save()">Salvar</button>
+            <button (click)="this.toggleSuggestion();$event.stopPropagation()">Sugestão</button>                   
         </div>
         <div *ngIf="this.toggle" class="modal-description">
             <span>{{suggestion.analysis}}</span>
