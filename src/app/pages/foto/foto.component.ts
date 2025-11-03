@@ -41,6 +41,7 @@ export class FotoComponent implements OnDestroy{
   ) {}
 
   startCamera(type: 'frontal' | 'traseira'): void {
+    this.isCameraActive = true;
     this.errorMessage = null;
 
     // Encerra qualquer stream anterior
@@ -63,24 +64,24 @@ export class FotoComponent implements OnDestroy{
     };
 
     navigator.mediaDevices.getUserMedia(constraints)
-      .then(stream => {
-        if (this.videoElement) {
-          this.videoElement.nativeElement.srcObject = stream;
-          this.videoElement.nativeElement.play().catch(() => {});
-          this.isCameraActive = true;
-        }
-      })
+    .then(stream => {
+      if (this.videoElement) {
+      this.videoElement.nativeElement.srcObject = stream;
+      this.videoElement.nativeElement.play().catch(() => {});
+    }
+    })
       .catch(async () => {
         this.errorMessage = 'Não foi possível acessar a câmera. ';
         setTimeout(() => {
           this.errorMessage = '';
         }, 2000);
-        this.isCameraActive = false;
-      });
+      this.isCameraActive = false;
+    });
   }
 
   // Método para parar a câmera
   stopCamera(): void {
+    this.loading = false;
     this.errorMessage = null;
     if (this.videoElement && this.videoElement.nativeElement.srcObject) {
       const stream = this.videoElement.nativeElement.srcObject as MediaStream;
@@ -94,6 +95,7 @@ export class FotoComponent implements OnDestroy{
   // Método para tirar uma foto e converter para base64
   takePhoto(): void {
     if (this.isCameraActive && this.videoElement && this.canvasElement) {
+      this.loading = true
       const video = this.videoElement.nativeElement as HTMLVideoElement;
       const canvas = this.canvasElement.nativeElement as HTMLCanvasElement;
       const context = canvas.getContext('2d');
@@ -110,7 +112,6 @@ export class FotoComponent implements OnDestroy{
 
       video.pause();
       this.getDescription(this.photoBase64);
-      this.loading = true
     }
   }
 
@@ -141,12 +142,10 @@ export class FotoComponent implements OnDestroy{
   getDescription(img: string) {
     this.ApiService.getDescription(img).subscribe({
       next: (res)=>{
-        this.description = res
-          this.openModal();
-          this.loading = false
-          this.stopCamera();
+        this.description = res;
+        this.openModal();
       },
-      error: ()=>{
+      complete: ()=>{
         this.stopCamera();
       }
     })
