@@ -1,4 +1,5 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './../../services/api.service';
 import { CommonModule } from '@angular/common';
 import { TextToSpeechService } from './../../services/text-speech/text-to-speech.service';
@@ -16,18 +17,22 @@ export class ModalRoupaComponent implements OnInit {
   @Input() img: any;
   @Input() modal: boolean = true;
   @Output() close: EventEmitter<void> = new EventEmitter<void>();
-  toggle: Boolean = false;
   loading: Boolean = true;
   suggestion: any;
   base64: any;
-  clothe: any;
+  showBtn: boolean = false;
   
   constructor(
+    private activatedRoute: ActivatedRoute,
     private ApiService: ApiService,
     private ttsService: TextToSpeechService,
   ) {}
 
   ngOnInit (): void {
+    const url = this.activatedRoute.snapshot.url.map(segmento => segmento.path).join('/')
+    if (url.includes('foto')) {
+      this.showBtn = true;
+    }
     if (this.img) {
       this.base64 = this.img.replace(/^data:image\/\w+;base64,/, '');
       this.convertBase64ToJpg(this.img);
@@ -97,7 +102,6 @@ export class ModalRoupaComponent implements OnInit {
     this.ApiService.postSuggestion(itemId).subscribe({
       next: (res)=>{
         this.suggestion = res;
-        this.toggle = true;
         this.loading = false;
       },
       error: ()=>{
