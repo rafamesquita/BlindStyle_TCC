@@ -40,7 +40,7 @@ export class FotoComponent implements OnDestroy{
     private ttsService: TextToSpeechService,
   ) {}
 
-  startCamera(type: 'frontal' | 'traseira'): void {
+  startCamera (type: 'frontal' | 'traseira'): void {
     this.isCameraActive = true;
     this.errorMessage = null;
 
@@ -80,7 +80,7 @@ export class FotoComponent implements OnDestroy{
   }
 
   // Método para parar a câmera
-  stopCamera(): void {
+  stopCamera (): void {
     this.loading = false;
     this.errorMessage = null;
     if (this.videoElement && this.videoElement.nativeElement.srcObject) {
@@ -93,7 +93,7 @@ export class FotoComponent implements OnDestroy{
   }
 
   // Método para tirar uma foto e converter para base64
-  takePhoto(): void {
+  takePhoto (): void {
     if (this.isCameraActive && this.videoElement && this.canvasElement) {
       this.loading = true
       const video = this.videoElement.nativeElement as HTMLVideoElement;
@@ -111,16 +111,16 @@ export class FotoComponent implements OnDestroy{
       this.photoBase64 = canvas.toDataURL('image/png');
 
       video.pause();
-      this.getDescription(this.photoBase64);
+      this.getDescription();
     }
   }
 
   // Abre a galeria ao clicar no botão
-  openGallery(): void {
+  openGallery (): void {
     this.fileInput.nativeElement.click();
   }
 
-  onFileSelected(event: Event): void {
+  onFileSelected (event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
@@ -139,13 +139,14 @@ export class FotoComponent implements OnDestroy{
     }
   }
 
-  getDescription(img: string) {
+  getDescription () {
     if (this.photoBase64) {
       this.loading = true;
+
       // Remove o prefixo "data:image/png;base64," ou similar
       const base64Content = this.photoBase64.replace(/^data:image\/\w+;base64,/, '');
  
-      this.ApiService.getDescription(base64Content).subscribe({
+      this.ApiService.postDescription(base64Content).subscribe({
         next: (res)=>{
           this.description = res;
           this.openModal();
@@ -158,15 +159,15 @@ export class FotoComponent implements OnDestroy{
     }
   }
 
-  openModal() {
-    this.modal = !this.modal
+  openModal () {
+    this.modal = !this.modal;
   }
 
-  onSpeak(text: string): void {
+  onSpeak (text: string): void {
     this.ttsService.speak(text);
   }
   
-  ngOnDestroy() {
+  ngOnDestroy () {
     this.stopCamera();
   }
 

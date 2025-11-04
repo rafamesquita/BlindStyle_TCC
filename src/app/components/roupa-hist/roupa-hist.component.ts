@@ -12,17 +12,18 @@ import { TextToSpeechService } from './../../services/text-speech/text-to-speech
 })
 export class RoupaHistComponent {
 
-  @Input() data: any
+  @Input() data: any;
+  modal: boolean = false;
 
-  modal: boolean = false
+  constructor(
+    private ttsService: TextToSpeechService,
+  ) {}
 
-  constructor(private ttsService: TextToSpeechService) {}
-
-  openModal() {
-    this.modal = !this.modal
+  openModal () {
+    this.modal = !this.modal;
   }
   
-  openImg(base64: string, contentType: string = 'image/jpg') {
+  openImg (base64: string, contentType: string = 'image/jpg') {
     const byteCharacters = atob(base64);
     const byteNumbers = Array.from(byteCharacters).map(char => char.charCodeAt(0));
     const byteArray = new Uint8Array(byteNumbers);
@@ -30,7 +31,7 @@ export class RoupaHistComponent {
     this.displayImageFromBlob(blob); // Passa a instância de Blob para o método
   }
 
-  displayImageFromBlob(blob: Blob) { // Define o tipo como Blob
+  displayImageFromBlob (blob: Blob) { // Define o tipo como Blob
     const imageUrl = URL.createObjectURL(blob);
     const imgElement = document.createElement('img');
     imgElement.src = imageUrl;
@@ -39,11 +40,11 @@ export class RoupaHistComponent {
     imgElement.style.height = "150px";
     const container = document.getElementById('imageContainer');
     if (container) {
-        container.appendChild(imgElement);
+      container.appendChild(imgElement);
     }
   }
 
-  onSpeak(text: string): void {
+  onSpeak (text: string): void {
     this.ttsService.speak(text);
   }
 }

@@ -14,12 +14,12 @@ export class MenuComponent implements OnInit{
   activeButton: 'historico' | 'foto' = 'historico';
 
   constructor(
-      private activatedRoute: ActivatedRoute,
-      private router: Router,
-      private ttsService: TextToSpeechService,
+    private activatedRoute: ActivatedRoute,
+    private router: Router,
+    private ttsService: TextToSpeechService,
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit (): void {
     const url = this.activatedRoute.snapshot.url.map(segmento => segmento.path).join('/')
     if (url.includes('foto')) {
       this.activeButton = 'foto';
@@ -30,14 +30,13 @@ export class MenuComponent implements OnInit{
     else {
       this.activeButton = 'foto'; // padrão
     }
- 
   }
 
-  goTo(route: string) {
+  goTo (route: string) {
     this.router.navigate([`/${route}`]);
   }
 
-  onSpeak(text: string): void {
+  onSpeak (text: string): void {
     this.ttsService.speak(text);
   }
 

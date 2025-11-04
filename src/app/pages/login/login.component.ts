@@ -3,8 +3,7 @@ import { HeaderComponent } from '../../components/header/header.component';
 import { Router } from '@angular/router';
 import { FooterComponent } from "../../components/footer/footer.component";
 import { AuthService } from '../../services/auth/auth.service';
-import { FormsModule } from '@angular/forms'; 
-import { environment } from '../../environments/environments';
+import { FormsModule } from '@angular/forms';
 import { TextToSpeechService } from './../../services/text-speech/text-to-speech.service';
 
 @Component({
@@ -20,12 +19,13 @@ export class LoginComponent {
   password: string = '';
   errorMessage: string = '';
 
-  constructor(private authService: AuthService,
+  constructor(
+    private authService: AuthService,
     private router: Router,
     private ttsService: TextToSpeechService,
   ) {}
 
-  home(): void {
+  home (): void {
     this.authService.login(this.username, this.password).subscribe(
       (response) => {
         this.router.navigate(['/foto']);
@@ -36,12 +36,12 @@ export class LoginComponent {
     );
   }
 
-  logout(): void {
+  logout (): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-  onSpeak(text: string): void {
+  onSpeak (text: string): void {
     this.ttsService.speak(text);
   }
 }

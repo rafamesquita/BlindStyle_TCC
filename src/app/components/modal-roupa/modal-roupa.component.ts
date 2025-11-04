@@ -10,7 +10,8 @@ import { TextToSpeechService } from './../../services/text-speech/text-to-speech
   templateUrl: './modal-roupa.component.html',
   styleUrl: './modal-roupa.component.scss'
 })
-export class ModalRoupaComponent implements OnInit{
+export class ModalRoupaComponent implements OnInit {
+
   @Input() data: any;
   @Input() img: any;
   @Input() modal: boolean = true;
@@ -21,9 +22,12 @@ export class ModalRoupaComponent implements OnInit{
   base64: any;
   clothe: any;
   
-  constructor(private ApiService: ApiService, private ttsService: TextToSpeechService) {}
+  constructor(
+    private ApiService: ApiService,
+    private ttsService: TextToSpeechService,
+  ) {}
 
-  ngOnInit(): void {
+  ngOnInit (): void {
     if (this.img) {
       this.base64 = this.img.replace(/^data:image\/\w+;base64,/, '');
       this.convertBase64ToJpg(this.img);
@@ -34,12 +38,12 @@ export class ModalRoupaComponent implements OnInit{
     }
   }
 
-  closeModal() {
+  closeModal () {
     this.close.emit();
     this.modal = false;
   }
 
-  convertBase64ToJpg(base64Data: string) {
+  convertBase64ToJpg (base64Data: string) {
     // Remove o prefixo "data:image/png;base64," ou similar
     const base64Content = base64Data.replace(/^data:image\/\w+;base64,/, '');
 
@@ -57,10 +61,10 @@ export class ModalRoupaComponent implements OnInit{
     else {
     this.data.image_url = URL.createObjectURL(blob);
     }
-    this.loading = false
+    this.loading = false;
   }
 
-  save(){
+  save () {
     this.loading = true;
 
     let body = {
@@ -77,27 +81,23 @@ export class ModalRoupaComponent implements OnInit{
     }
 
     this.ApiService.postItems(body).subscribe({
-      next: (res)=>{
+      next: ()=>{
+        this.loading = false;
+      },
+      error: ()=>{
         this.loading = false;
       }
     })
     this.closeModal();
   }
 
-  toggleSuggestion(){
+  postSuggestion (itemId: string) {
     this.loading = true;
-    this.toggle = !this.toggle
 
-    if (this.toggle = true) {
-      this.getSuggestion(this.data.id)
-    }
-  }
-
-  getSuggestion(itemId: string) {
-    this.loading = true;
-    this.ApiService.getSuggestion(itemId).subscribe({
+    this.ApiService.postSuggestion(itemId).subscribe({
       next: (res)=>{
-        this.suggestion = res
+        this.suggestion = res;
+        this.toggle = true;
         this.loading = false;
       },
       error: ()=>{
@@ -106,7 +106,7 @@ export class ModalRoupaComponent implements OnInit{
     })
   }
   
-  onSpeak(text: string): void {
+  onSpeak (text: string): void {
     this.ttsService.speak(text);
   }
 }

@@ -22,15 +22,12 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<any> {
-    return this.http
-      .post<any>(`${this.apiUrl}/login`, { email, password })
-      .pipe(
-        switchMap((response) => {
-          this.storeTokens(response.access_token, response.refresh_token);
-          return of(response);
-        }),
-        catchError(this.handleError)
-      );
+    return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
+      switchMap((response) => {
+        this.storeTokens(response.access_token, response.refresh_token);
+        return of(response);
+      }),
+    catchError(this.handleError));
   }
 
   refreshAccessToken(): Observable<any> {
@@ -39,18 +36,15 @@ export class AuthService {
       return of(null);
     }
 
-    return this.http
-      .post<any>(this.refreshTokenUrl, { refresh_token: refreshToken })
-      .pipe(
-        switchMap((response) => {
-          if (response.access_token) {
-            this.storeAccessToken(response.access_token);
-            return of(response);
-          }
-          return of(null);
-        }),
-        catchError(this.handleError)
-      );
+    return this.http.post<any>(this.refreshTokenUrl, { refresh_token: refreshToken }).pipe(
+      switchMap((response) => {
+        if (response.access_token) {
+          this.storeAccessToken(response.access_token);
+          return of(response);
+        }
+        return of(null);
+      }),
+    catchError(this.handleError));
   }
 
   logout(): void {

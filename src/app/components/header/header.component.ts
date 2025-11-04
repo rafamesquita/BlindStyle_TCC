@@ -11,16 +11,14 @@ import { CommonModule } from '@angular/common';
 })
 export class HeaderComponent {
 
-  @Input() title: string = ''
+  @Input() title: string = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router
+  ) {}
 
-  login(){
+  login () {
     this.router.navigate(['/login']);
-  }
-
-  back(){
-    this.router.navigate(['/foto']);
   }
 
 }

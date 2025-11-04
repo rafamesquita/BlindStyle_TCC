@@ -9,7 +9,11 @@ import { TextToSpeechService } from './../../services/text-speech/text-to-speech
 @Component({
   selector: 'app-cadastro',
   standalone: true,
-  imports: [HeaderComponent, FooterComponent, FormsModule],
+  imports: [
+    HeaderComponent,
+    FooterComponent,
+    FormsModule,
+  ],
   templateUrl: './cadastro.component.html',
   styleUrl: './cadastro.component.scss'
 })
@@ -26,11 +30,11 @@ export class CadastroComponent {
     private ttsService: TextToSpeechService,
   ) {}
 
-  login(){
+  login () {
     this.router.navigate(['/login']);
   }
 
-  registerUser() {
+  registerUser () {
     this.AuthService.registerUser(this.username, this.email, this.password).subscribe({
       next: (res)=>{
         this.user = res;

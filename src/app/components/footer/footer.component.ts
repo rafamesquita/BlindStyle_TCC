@@ -9,7 +9,7 @@ import { Component } from '@angular/core';
 })
 export class FooterComponent {
 
-  openGit() {
+  openGit () {
     const url = 'https://github.com/ICEI-PUC-Minas-EC-TCC/pmg-ec-2025-2-tcc2-blindstyle';
     window.open(url, '_blank');
   }

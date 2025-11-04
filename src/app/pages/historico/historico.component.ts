@@ -23,20 +23,22 @@ export class HistoricoComponent implements OnInit {
   clothes: any;
   loading: boolean = true;
 
-  constructor(private ApiService: ApiService) {}
+  constructor(
+    private ApiService: ApiService,
+  ) {}
 
-  ngOnInit(): void {
-   this.getClothes()
+  ngOnInit (): void {
+   this.getClothes();
   }
 
-  getClothes() {
+  getClothes () {
     this.ApiService.getClothes().subscribe({
       next: (res: any)=>{
-        this.clothes = res.items
-        this.loading = false
+        this.clothes = res.items;
+        this.loading = false;
       },
       error: ()=>{
-        this.loading = false
+        this.loading = false;
       }
     })
   }
