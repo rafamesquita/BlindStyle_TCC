@@ -74,17 +74,31 @@ export class ModalRoupaComponent implements OnInit{
   }
 
   save(){
-    let name =  `${this.data.certain[0]}, ${this.data.certain[1]}`
-    let description = this.data.description
-    let imageUrl = this.base64
-    this.ApiService.postItems(name, description, imageUrl).subscribe({
+    this.loading = true;
+
+    let body = {
+      "name": "roupa",
+      "description": this.data.description,
+      "category": this.data.features.category,
+      "item_type": this.data.features.item_type,
+      "primary_color": this.data.features.primary_color,
+      "usage": this.data.features.usage,
+      "texture": this.data.features.texture,
+      "print_category": this.data.features.print_category,
+      "image_url": this.base64,
+      "ownership": true
+    }
+
+    this.ApiService.postItems(body).subscribe({
       next: (res)=>{
+        this.loading = false;
       }
     })
     this.closeModal();
   }
 
   toggleSuggestion(){
+    this.loading = true;
     this.toggle = !this.toggle
 
     if (this.toggle = true) {
@@ -93,20 +107,28 @@ export class ModalRoupaComponent implements OnInit{
   }
 
   getSuggestion(itemId: string) {
+    this.loading = true;
     this.ApiService.getSuggestion(itemId).subscribe({
       next: (res)=>{
         this.suggestion = res
+        this.loading = false;
       },
-      error: (error)=>{
+      error: ()=>{
         this.postSuggestion(itemId)
+        this.loading = false;
       }
     })
   }
 
   postSuggestion(itemId: string) {
+    this.loading = true;
     this.ApiService.postSuggestion(itemId).subscribe({
       next: (res)=>{
         this.getSuggestion(itemId)
+        this.loading = false;
+      },
+      error: ()=>{
+        this.loading = false;
       }
     })
   }

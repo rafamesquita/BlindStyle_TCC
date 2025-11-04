@@ -16,9 +16,14 @@ export class AuthService {
     private http: HttpClient,
   ) {}
 
-  login(username: string, password: string): Observable<any> {
+  registerUser(username: string, email: string, password: string) {
+    const payload = { name: username, email: email, password: password}
+    return this.http.post(`${this.apiUrl}/register`, payload);
+  }
+
+  login(email: string, password: string): Observable<any> {
     return this.http
-      .post<any>(`${this.apiUrl}/login`, { username, password })
+      .post<any>(`${this.apiUrl}/login`, { email, password })
       .pipe(
         switchMap((response) => {
           this.storeTokens(response.access_token, response.refresh_token);
@@ -49,7 +54,7 @@ export class AuthService {
   }
 
   logout(): void {
-    this.clearTokens();
+    localStorage.clear();
   }
 
   private storeTokens(accessToken: string, refreshToken: string): void {
@@ -61,17 +66,8 @@ export class AuthService {
     localStorage.setItem('access_token', accessToken);
   }
 
-  public getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
-  }
-
   private getRefreshToken(): string | null {
     return localStorage.getItem('refresh_token');
-  }
-
-  private clearTokens(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

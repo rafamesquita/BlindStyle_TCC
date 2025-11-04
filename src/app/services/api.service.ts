@@ -7,66 +7,43 @@ import { environment } from '../environments/environments';
   providedIn: 'root',
 })
 export class ApiService {
-  private apiUrl = environment.apiUrl;
+
+  protected apiUrl = environment.apiUrl;
+  protected headers = new HttpHeaders();
   
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) {}
+  ) {
+    const accessToken = localStorage.getItem('access_token');
+    this.headers = new HttpHeaders({
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    });
+  }
 
   getClothes() {
-    const accessToken = this.authService.getAccessToken();
-    let headers = new HttpHeaders();
-    if (accessToken) {
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    return this.http.get(`${this.apiUrl}/api/v1/items/get_item_list`,{ headers });
+    return this.http.get(`${this.apiUrl}/api/v1/items/list-all?page=1&size=10&status=active`, { headers: this.headers });
   }
 
   getSpecificClothe(id: number) {
-    const accessToken = this.authService.getAccessToken();
-    let headers = new HttpHeaders();
-    if (accessToken) {
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    return this.http.get(`${this.apiUrl}/api/v1/items/get_item/${id}`,{ headers });
+    return this.http.get(`${this.apiUrl}/api/v1/items/get_item/${id}`, { headers: this.headers });
   }
 
   getDescription(parametro: string) {
-    const payload = { input: parametro}
-    return this.http.post(`${this.apiUrl}/api/v1/description/description/`, payload);
+    const payload = { image_base64: parametro}
+    return this.http.post(`${this.apiUrl}/api/v1/api/descriptions/extract-features/upload`, payload, { headers: this.headers });
   }
 
-  registerUser(username: string, password: string) {
-    const payload = { username: username, password: password}
-    return this.http.post(`${this.apiUrl}/api/v1/users/register_user`, payload);
-  }
-
-  postItems(name: string, description: string, imageUrl: string) {
-    const accessToken = this.authService.getAccessToken();
-    let headers = new HttpHeaders();
-    if (accessToken) {
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    const payload = { name, description, image_url: imageUrl };
-    return this.http.post(`${this.apiUrl}/api/v1/items/create_item`, payload, { headers });
+  postItems(body: any) {
+    return this.http.post(`${this.apiUrl}/api/v1/itemscreate`, body, { headers: this.headers });
   }
   
   getSuggestion(itemId: string) {
-    const accessToken = this.authService.getAccessToken();
-    let headers = new HttpHeaders();
-    if (accessToken) {
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    return this.http.get(`${this.apiUrl}/api/v1/suggestion/get_last_suggestion/${itemId}`, { headers });
+    return this.http.get(`${this.apiUrl}/api/v1/suggestions/generate?item_id=${itemId}`, { headers: this.headers });
   }
   
   postSuggestion(clothingId: string) { 
-    const accessToken = this.authService.getAccessToken();
-    let headers = new HttpHeaders();
-    if (accessToken) {
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    return this.http.post(`${this.apiUrl}/api/v1/suggestion/suggest_item/${clothingId}`, null, { headers });
+    return this.http.post(`${this.apiUrl}/api/v1/suggestion/suggest_item/${clothingId}`, null, { headers: this.headers });
   } 
 }

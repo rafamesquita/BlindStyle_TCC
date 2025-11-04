@@ -140,15 +140,22 @@ export class FotoComponent implements OnDestroy{
   }
 
   getDescription(img: string) {
-    this.ApiService.getDescription(img).subscribe({
-      next: (res)=>{
-        this.description = res;
-        this.openModal();
-      },
-      complete: ()=>{
-        this.stopCamera();
-      }
-    })
+    if (this.photoBase64) {
+      this.loading = true;
+      // Remove o prefixo "data:image/png;base64," ou similar
+      const base64Content = this.photoBase64.replace(/^data:image\/\w+;base64,/, '');
+ 
+      this.ApiService.getDescription(base64Content).subscribe({
+        next: (res)=>{
+          this.description = res;
+          this.openModal();
+          this.stopCamera();
+        },
+        error: ()=> {
+          this.stopCamera();
+        }
+      })
+    }
   }
 
   openModal() {
