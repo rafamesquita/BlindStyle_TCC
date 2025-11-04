@@ -18,6 +18,7 @@ export class ModalRoupaComponent implements OnInit {
   @Input() modal: boolean = true;
   @Output() close: EventEmitter<void> = new EventEmitter<void>();
   loading: Boolean = true;
+  modalSugestao: boolean = false;
   suggestion: any;
   base64: any;
   showBtn: boolean = false;
@@ -102,12 +103,22 @@ export class ModalRoupaComponent implements OnInit {
     this.ApiService.postSuggestion(itemId).subscribe({
       next: (res)=>{
         this.suggestion = res;
+
+        this.suggestion = Object.entries(this.suggestion)
+        .filter(([_, value]) => value !== null)
+        .map(([key, value]: [string, any], index) => ({ title: `Sugestão ${index + 1}`, ...value }));
+
+        this.modalSugestao = true;
         this.loading = false;
       },
       error: ()=>{
         this.loading = false;
       }
     })
+  }
+
+  back () {
+    this.modalSugestao = false;
   }
   
   onSpeak (text: string): void {
