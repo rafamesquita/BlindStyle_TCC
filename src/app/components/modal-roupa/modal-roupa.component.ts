@@ -30,7 +30,6 @@ export class ModalRoupaComponent implements OnInit{
     }
     else {
       this.base64 = this.data.image_url.replace(/^data:image\/\w+;base64,/, '');
-      this.getSpecificClothe();
       this.convertBase64ToJpg(this.data.image_url);
     }
   }
@@ -38,18 +37,6 @@ export class ModalRoupaComponent implements OnInit{
   closeModal() {
     this.close.emit();
     this.modal = false;
-  }
-
-  getSpecificClothe() {
-    this.ApiService.getSpecificClothe(this.data.id).subscribe({
-      next: (res)=>{
-        this.clothe = res
-        setTimeout(() => {
-          this.loading = false 
-        }, 2000);
-        
-      }
-    })
   }
 
   convertBase64ToJpg(base64Data: string) {
@@ -111,20 +98,6 @@ export class ModalRoupaComponent implements OnInit{
     this.ApiService.getSuggestion(itemId).subscribe({
       next: (res)=>{
         this.suggestion = res
-        this.loading = false;
-      },
-      error: ()=>{
-        this.postSuggestion(itemId)
-        this.loading = false;
-      }
-    })
-  }
-
-  postSuggestion(itemId: string) {
-    this.loading = true;
-    this.ApiService.postSuggestion(itemId).subscribe({
-      next: (res)=>{
-        this.getSuggestion(itemId)
         this.loading = false;
       },
       error: ()=>{

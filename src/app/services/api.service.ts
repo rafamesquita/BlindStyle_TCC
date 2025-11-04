@@ -10,24 +10,25 @@ export class ApiService {
 
   protected apiUrl = environment.apiUrl;
   protected headers = new HttpHeaders();
+  protected accessToken = localStorage.getItem('access_token');
   
   constructor(
     private http: HttpClient,
     private authService: AuthService
   ) {
-    const accessToken = localStorage.getItem('access_token');
     this.headers = new HttpHeaders({
-      'Authorization': `Bearer ${accessToken}`,
+      'Authorization': `Bearer ${this.accessToken}`,
       'Content-Type': 'application/json'
     });
   }
 
   getClothes() {
-    return this.http.get(`${this.apiUrl}/api/v1/items/list-all?page=1&size=10&status=active`, { headers: this.headers });
-  }
-
-  getSpecificClothe(id: number) {
-    return this.http.get(`${this.apiUrl}/api/v1/items/get_item/${id}`, { headers: this.headers });
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.accessToken}`,
+      'ngrok-skip-browser-warning': 'any',
+      'accept': 'application/json'
+    });
+    return this.http.get(`${this.apiUrl}/api/v1/items/list-all?page=1&size=10&status=active`, { headers: headers })
   }
 
   getDescription(parametro: string) {
@@ -40,10 +41,12 @@ export class ApiService {
   }
   
   getSuggestion(itemId: string) {
-    return this.http.get(`${this.apiUrl}/api/v1/suggestions/generate?item_id=${itemId}`, { headers: this.headers });
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.accessToken}`,
+      'ngrok-skip-browser-warning': 'any',
+      'accept': 'application/json'
+    });
+    return this.http.post(`${this.apiUrl}/api/v1/suggestions/generate?item_id=${itemId}`, '', { headers: headers });
   }
-  
-  postSuggestion(clothingId: string) { 
-    return this.http.post(`${this.apiUrl}/api/v1/suggestion/suggest_item/${clothingId}`, null, { headers: this.headers });
-  } 
+
 }

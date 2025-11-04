@@ -31,8 +31,8 @@ export class HistoricoComponent implements OnInit {
 
   getClothes() {
     this.ApiService.getClothes().subscribe({
-      next: (res)=>{
-        this.clothes = res
+      next: (res: any)=>{
+        this.clothes = res.items
         this.loading = false
       },
       error: ()=>{
