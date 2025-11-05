@@ -1,8 +1,8 @@
 <div class="modal-overlay" *ngIf="modal">
     <div *ngIf="!modalSugestao" class="modal">
-        <div *ngIf="!img" class="modal-title">
+        <div class="modal-title">
             <span></span>
-            {{data.name}}
+            <span> {{!img ? data.name : ''}}</span>
             <button class="close-button" (click)="closeModal()">✖</button>
         </div>
         
@@ -22,7 +22,8 @@
         </div>
         
         <div class="btn">
-            <button *ngIf="showBtn" (click)="save()">Salvar</button>
+            <input *ngIf="showBtn" type="text" [(ngModel)]="itemName" placeholder="Digite o nome..." />
+            <button *ngIf="showBtn" disabled="!itemName" (click)="save()">Salvar</button>
             <button *ngIf="!showBtn" (click)="postSuggestion(data.id);$event.stopPropagation()">Sugestão</button>                                
         </div>
     </div>

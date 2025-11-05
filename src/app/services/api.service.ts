@@ -29,7 +29,7 @@ export class ApiService {
 
   // Salva a roupa no histórico
   postItems (body: any) {
-    return this.http.post(`${this.apiUrl}/api/v1/itemscreate`, body, { headers: this.headers });
+    return this.http.post(`${this.apiUrl}/api/v1/items/create`, body, { headers: this.headers });
   }
 
   // Lista as roupas no histórico

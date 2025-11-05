@@ -1,4 +1,5 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from './../../services/api.service';
 import { CommonModule } from '@angular/common';
@@ -7,7 +8,10 @@ import { TextToSpeechService } from './../../services/text-speech/text-to-speech
 @Component({
   selector: 'app-modal-roupa',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './modal-roupa.component.html',
   styleUrl: './modal-roupa.component.scss'
 })
@@ -20,6 +24,7 @@ export class ModalRoupaComponent implements OnInit {
   loading: Boolean = true;
   modalSugestao: boolean = false;
   suggestion: any;
+  itemName: string = '';
   base64: any;
   showBtn: boolean = false;
   
@@ -74,7 +79,7 @@ export class ModalRoupaComponent implements OnInit {
     this.loading = true;
 
     let body = {
-      "name": "roupa",
+      "name": this.itemName,
       "description": this.data.description,
       "category": this.data.features.category,
       "item_type": this.data.features.item_type,
@@ -107,6 +112,8 @@ export class ModalRoupaComponent implements OnInit {
         this.suggestion = Object.entries(this.suggestion)
         .filter(([_, value]) => value !== null)
         .map(([key, value]: [string, any], index) => ({ title: `Sugestão ${index + 1}`, ...value }));
+
+        console.log(this.suggestion)
 
         this.modalSugestao = true;
         this.loading = false;
