@@ -27,6 +27,7 @@ export class ModalRoupaComponent implements OnInit {
   itemName: string = '';
   base64: any;
   showBtn: boolean = false;
+  isEmpty: boolean = false;
   
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -79,7 +80,7 @@ export class ModalRoupaComponent implements OnInit {
     this.loading = true;
 
     let body = {
-      "name": this.itemName,
+      "name": this.itemName || 'Roupa',
       "description": this.data.description,
       "category": this.data.features.category,
       "item_type": this.data.features.item_type,
@@ -104,16 +105,19 @@ export class ModalRoupaComponent implements OnInit {
 
   postSuggestion (itemId: string) {
     this.loading = true;
+    this.isEmpty = false;
 
     this.ApiService.postSuggestion(itemId).subscribe({
       next: (res)=>{
         this.suggestion = res;
 
+        const isEmpty = Object.values(this.suggestion).every(v => v === null);
+        if (isEmpty) this.isEmpty = true;
+        else this.isEmpty = false;
+
         this.suggestion = Object.entries(this.suggestion)
         .filter(([_, value]) => value !== null)
         .map(([key, value]: [string, any], index) => ({ title: `Sugestão ${index + 1}`, ...value }));
-
-        console.log(this.suggestion)
 
         this.modalSugestao = true;
         this.loading = false;

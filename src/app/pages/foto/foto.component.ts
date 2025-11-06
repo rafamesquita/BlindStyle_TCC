@@ -95,7 +95,7 @@ export class FotoComponent implements OnDestroy{
   // Método para tirar uma foto e converter para base64
   takePhoto (): void {
     if (this.isCameraActive && this.videoElement && this.canvasElement) {
-      this.loading = true
+      this.loading = true;
       const video = this.videoElement.nativeElement as HTMLVideoElement;
       const canvas = this.canvasElement.nativeElement as HTMLCanvasElement;
       const context = canvas.getContext('2d');
@@ -107,8 +107,7 @@ export class FotoComponent implements OnDestroy{
       // Desenhar o quadro atual do vídeo no canvas
       context?.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Converter o conteúdo do canvas para base64
-      this.photoBase64 = canvas.toDataURL('image/png');
+      this.photoBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
       video.pause();
       this.getDescription();

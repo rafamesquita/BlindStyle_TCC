@@ -209,3 +209,16 @@ button {
 .speak-button:hover {
   transform: scale(1.1);
 }
+
+.isEmpty {
+  display: flex;
+  justify-content: center;
+  color: #555;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  width: 50%;
+}
