@@ -30,11 +30,11 @@
 
     <div *ngIf="modalSugestao" class="modal">        
         
-        <div *ngIf="!isEmpty" class="isEmpty">
+        <div *ngIf="isEmpty" class="isEmpty">
             <p>Nenhuma sugestão encontrada. Tente novamente...</p>
         </div>
 
-        <div *ngIf="isEmpty">
+        <div *ngIf="!isEmpty">
             <div *ngFor="let outfit of suggestion" class="outfit-container">
                 <h3 class="outfit-title">{{ outfit.title }}</h3>
 
