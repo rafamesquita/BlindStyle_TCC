@@ -1,0 +1,50 @@
+.descricao-roupa-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f4f4f4; 
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  cursor: pointer;
+}
+
+.descricao-roupa-container:hover {
+  background-color: #ddd9d9;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+  .icon {
+    background-color: #ddd9d9;
+  }
+}
+  
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f4f4f4; 
+  border-radius: 50%; 
+  padding: 10px;
+}
+  
+.descricao-texto {
+  padding-left: 10px;
+  color: black;
+  font-size: 16px;
+  .name{
+    font-weight: bold;
+  }
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}

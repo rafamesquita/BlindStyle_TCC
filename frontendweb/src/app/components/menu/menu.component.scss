@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+  justify-content: 40px;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 45px;
+}
+
+.container button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 12px 12px 0 0;
+  transition: all 0.2s ease-in-out;
+  color: #ffff;
+}
+
+.container button.active {
+  background-color: #272f3d;
+}
+
+.container button:hover {
+  background-color: #444b5a;
+}
+
+.container button svg {
+  transition: transform 0.2s ease-in-out, stroke 0.2s ease-in-out;
+}
+
+.container button:hover svg {
+  transform: scale(1.05);
+}

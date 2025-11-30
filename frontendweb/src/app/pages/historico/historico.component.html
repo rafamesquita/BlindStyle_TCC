@@ -1,0 +1,19 @@
+<div class="container">
+
+    <div class="header">
+        <app-header></app-header>
+        <app-menu></app-menu>
+    </div>
+
+    <div class="main-content">
+        <!-- Box com as roupas -->
+        <div class="grid-container">
+            <div *ngFor="let roupa of clothes">
+                <app-roupa-hist [data]="roupa"></app-roupa-hist>
+            </div>
+        </div>
+        <div class="loading-overlay" *ngIf="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div>
