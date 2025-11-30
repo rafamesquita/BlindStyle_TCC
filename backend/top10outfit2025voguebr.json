@@ -1,0 +1,316 @@
+[
+  {
+    "tendencia": "Suéter pólo",
+    "peças": {
+      "coat": {
+      "category": "tops",
+      "item_type": "long coat",
+      "primary_color": "dark brown",
+      "usage": "outerwear",
+      "texture": "wool",
+      "print_category": "animal"
+    },
+    "sweater": {
+      "category": "tops",
+      "item_type": "polo sweater",
+      "primary_color": "brown",
+      "usage": "casual",
+      "texture": "knit",
+      "print_category": "plain"
+    },
+    "shorts": {
+      "category": "bottoms",
+      "item_type": "shorts",
+      "primary_color": "black",
+      "usage": "casual",
+      "texture": "polyester",
+      "print_category": "plain"
+    },
+    "boots": {
+      "category": "shoes",
+      "item_type": "knee-high boots",
+      "primary_color": "dark brown",
+      "usage": "casual",
+      "texture": "leather",
+      "print_category": "plain"
+    }
+    }
+  },
+  {
+    "tendencia": "Jaqueta barn",
+    "peças": {
+       "jacket": {
+      "category": "tops",
+      "item_type": "waxed jacket",
+      "primary_color": "multi-color",
+      "usage": "outerwear",
+      "texture": "cotton",
+      "print_category": "plain"
+    },
+    "shirt": {
+      "category": "tops",
+      "item_type": "collared shirt",
+      "primary_color": "off-white",
+      "usage": "casual",
+      "texture": "cotton",
+      "print_category": "plain"
+    },
+    "jeans": {
+      "category": "bottoms",
+      "item_type": "straight leg jeans",
+      "primary_color": "blue",
+      "usage": "casual",
+      "texture": "denim",
+      "print_category": "plain"
+    }
+    }
+  },
+  {
+    "tendencia": "Bordô e marrom",
+    "peças": {
+       "blazer": {
+      "category": "tops",
+      "item_type": "blazer",
+      "primary_color": "dark brown",
+      "usage": "business",
+      "texture": "wool",
+      "print_category": "plain"
+    },
+    "sweater": {
+      "category": "tops",
+      "item_type": "turtleneck sweater",
+      "primary_color": "beige",
+      "usage": "business",
+      "texture": "knit",
+      "print_category": "plain"
+    },
+    "trousers": {
+      "category": "bottoms",
+      "item_type": "wide leg trousers",
+      "primary_color": "dark brown",
+      "usage": "business",
+      "texture": "wool",
+      "print_category": "plain"
+    },
+    "shoes": {
+      "category": "shoes",
+      "item_type": "pointed toe boots",
+      "primary_color": "black",
+      "usage": "business",
+      "texture": "leather",
+      "print_category": "plain"
+    }
+    }
+  },
+  {
+    "tendencia": "Puma Speedcat",
+    "peças": {
+      "puma_speedcat.jpg": {
+        "category": "shoes",
+        "item_type": "sprot shoes",
+        "primary_color": "black",
+        "usage": "outwear",
+        "texture": "suede",
+        "print_category": "solid"
+      },
+      "jeans.jpg": {
+        "category": "bottoms",
+        "item_type": "jeans",
+        "primary_color": "light grey",
+        "usage": "outwear",
+        "texture": "denim",
+        "print_category": "solid"
+      },
+      "jaqueta_couro_suede.jpg": {
+        "category": "tops",
+        "item_type": "jeans jacket",
+        "primary_color": "tan",
+        "usage": "outwear",
+        "texture": "denim",
+        "print_category": "solid"
+      }
+    }
+  },
+  {
+    "tendencia": "Bucket bag",
+    "peças": {
+      "blusa_preta.jpg": {
+        "category": "tops",
+        "item_type": "long sleeve shirt",
+        "primary_color": "black",
+        "usage": "party",
+        "texture": "cotton",
+        "print_category": "solid"
+      },
+      "saia_xadrez.jpg": {
+        "category": "bottoms",
+        "item_type": "skirt",
+        "primary_color": "tan",
+        "usage": "party",
+        "texture": "cotton",
+        "print_category": "plaid"
+      },
+      "botas.jpg": {
+        "category": "shoes",
+        "item_type": "boots",
+        "primary_color": "black",
+        "usage": "party",
+        "texture": "leather",
+        "print_category": "solid"
+      }
+    }
+  },
+  {
+    "tendencia": "Terninho feminino",
+    "peças": {
+      "blazer_oversized.jpg": {
+        "category": "tops",
+        "item_type": "blazer",
+        "primary_color": "grey",
+        "usage": "business",
+        "texture": "wool",
+        "print_category": "solid"
+      },
+      "calca_social.jpg": {
+        "category": "bottoms",
+        "item_type": "trouser",
+        "primary_color": "grey",
+        "usage": "business",
+        "texture": "wool",
+        "print_category": "solid"
+      },
+      "camisa_de_botoes.jpg": {
+        "category": "tops",
+        "item_type": "button down shirt",
+        "primary_color": "white",
+        "usage": "business",
+        "texture": "cotton",
+        "print_category": "solid"
+      },
+      "oxfords.jpg": {
+        "category": "shoes",
+        "item_type": "oxford shoes",
+        "primary_color": "black",
+        "usage": "formal",
+        "texture": "leather",
+        "print_category": "solid"
+      }
+    }
+  },
+  {
+    "tendencia": "Camurça",
+    "peças": {
+    "jacket": {
+      "category": "tops",
+      "item_type": "jacket",
+      "primary_color": "brown",
+      "usage": "outerwear",
+      "texture": "suede",
+      "print_category": "plain"
+    },
+    "crop_top": {
+      "category": "tops",
+      "item_type": "crop top",
+      "primary_color": "pink",
+      "usage": "casual",
+      "texture": "cotton",
+      "print_category": "floral"
+    },
+    "trousers": {
+      "category": "bottoms",
+      "item_type": "leggings",
+      "primary_color": "dark grey",
+      "usage": "casual",
+      "texture": "knit",
+      "print_category": "striped"
+    },
+    "shoes": {
+      "category": "shoes",
+      "item_type": "platform loafers",
+      "primary_color": "red",
+      "usage": "casual",
+      "texture": "leather",
+      "print_category": "plain"
+    }
+    }
+  },
+  {
+    "tendencia": "Jeans com barra virada",
+    "peças": {
+    "sweater": {
+      "category": "tops",
+      "item_type": "small cropped sweater",
+      "primary_color": "dark blue",
+      "usage": "casual",
+      "texture": "knit",
+      "print_category": "plain"
+    },
+    "shirt": {
+      "category": "tops",
+      "item_type": "large button-up shirt",
+      "primary_color": "white",
+      "usage": "casual",
+      "texture": "linnen",
+      "print_category": "plain"
+    },
+    "jeans": {
+      "category": "bottoms",
+      "item_type": "turnned edge jeans",
+      "primary_color": "dark blue",
+      "usage": "casual",
+      "texture": "denim",
+      "print_category": "plain"
+    },
+    "shoes": {
+      "category": "shoes",
+      "item_type": "loafers",
+      "primary_color": "black",
+      "usage": "formal",
+      "texture": "leather",
+      "print_category": "plain"
+    }
+    }
+  },
+  {
+    "tendencia": "Saia lápis",
+    "peças": {
+      "jacket": {
+      "category": "tops",
+      "item_type": "suit jacket",
+      "primary_color": "dark blue",
+      "usage": "formal",
+      "texture": "wool",
+      "print_category": "plain"
+    },
+    "top": {
+      "category": "tops",
+      "item_type": "turtleneck sweater",
+      "primary_color": "black",
+      "usage": "business",
+      "texture": "knit",
+      "print_category": "plain"
+    },
+    "skirt": {
+      "category": "bottoms",
+      "item_type": "midi pencil skirt",
+      "primary_color": "dark blue",
+      "usage": "formal",
+      "texture": "wool",
+      "print_category": "plain"
+    },
+    "shoes": {
+      "category": "shoes",
+      "item_type": "patent leather pumps",
+      "primary_color": "black",
+      "usage": "formal",
+      "texture": "leather",
+      "print_category": "plain"
+    }
+    }
+  },
+  {
+    "tendencia": "Amuletos de bolsa",
+    "peças": {
+    }
+  }
+]

@@ -37,7 +37,7 @@ class CompatibilityTrainer:
         device: str = 'cuda',
         checkpoint_dir: str = './checkpoints',
         log_dir: str = './logs',
-        early_stopping_patience: int = 10
+        early_stopping_patience: int = 20
     ):
         """
         Initialize trainer
@@ -219,7 +219,7 @@ class CompatibilityTrainer:
             'confusion_matrix': cm
         }
 
-    def train(self, num_epochs: int):
+    def train(self, num_epochs: int, start_epoch: Optional[int] = None):
         """
         Complete training loop
         
@@ -231,7 +231,7 @@ class CompatibilityTrainer:
 
         start_time = time.time()
 
-        for epoch in range(num_epochs):
+        for epoch in range(start_epoch, num_epochs):
             self.current_epoch = epoch
             epoch_start = time.time()
 
@@ -266,7 +266,7 @@ class CompatibilityTrainer:
                   f"F1: {val_metrics['f1']:.4f}")
 
             # Save best model
-            if val_metrics['auc'] > self.best_val_auc:
+            if (epoch >= 19) and (val_metrics['auc'] > self.best_val_auc) :
                 self.best_val_auc = val_metrics['auc']
                 self.best_val_acc = val_metrics['accuracy']
                 self.epochs_without_improvement = 0

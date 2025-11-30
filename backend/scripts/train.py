@@ -8,11 +8,6 @@ This script:
 4. Trains the model with validation
 5. Saves checkpoints and best model
 
-🔧 TO TRAIN WITH MORE EPOCHS:
-   Edit config/config.yaml and change 'num_epochs' parameter
-   Current default: 5 (for testing)
-   Recommended for full training: 50-100 epochs
-
 Usage:
     python scripts/train.py
     
@@ -234,8 +229,7 @@ def main():
     print("🚀"*35 + "\n")
     
     try:
-        trainer.train(num_epochs=config['num_epochs'])
-    except KeyboardInterrupt:
+        trainer.train(num_epochs=config['num_epochs'], start_epoch=start_epoch)
         print("\n\n⚠️  Training interrupted by user")
         print("Saving current state...")
         trainer._save_checkpoint('interrupted.pth', {})

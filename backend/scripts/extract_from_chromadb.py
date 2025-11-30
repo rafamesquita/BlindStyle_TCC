@@ -4,9 +4,6 @@ Pipeline de Geração de Dataset para Treinamento MCN
 
 Este script extrai outfits do ChromaDB e gera um dataset balanceado
 com samples positivos e negativos para treinar o modelo MCN.
-
-Autor: Blind Style Model Team
-Data: 2025-10-15
 """
 
 import chromadb
@@ -223,149 +220,65 @@ class DatasetGenerator:
         
         return positive_samples
     
-    def create_negative_samples(self, num_positives: int) -> List[Dict]:
+    def create_negative_samples(self, num_positives: int, pool_size: int = 15) -> List[Dict]:
         """
-        Gera samples negativos estratificados
+        Gera samples negativos por randomização pura
         
-        - 80% médios (trocar ~50% das peças)
-        - 20% fáceis (trocar 1 peça muito diferente)
+        Para cada negativo:
+        1. Seleciona pool_size outfits aleatórios
+        2. Extrai todas as peças desses outfits
+        3. Randomiza a ordem das peças
+        4. Cria outfit negativo pegando N peças aleatórias
         
         Args:
-            num_positives: Número de positivos (para balancear 1:1)
+            num_positives: Número de negativos a gerar (1:1 com positivos)
+            pool_size: Quantos outfits usar no pool de randomização
         
         Returns:
             list[dict]: Lista de samples negativos
         """
-        print(f"\n❌ [NEGATIVOS] Gerando {num_positives} samples negativos...")
-        
-        # Distribuição: 80% medium, 20% easy
-        num_medium = int(num_positives * 0.80)
-        num_easy = num_positives - num_medium
-        
-        print(f"   Médios (80%): {num_medium}")
-        print(f"   Fáceis (20%): {num_easy}")
+        print(f"\n❌ [NEGATIVOS] Gerando {num_positives} samples negativos (randomização pura)...")
+        print(f"   Pool size: {pool_size} outfits por negativo")
         
         negative_samples = []
-        
-        # Lista de outfit_ids
         outfit_ids_list = list(self.pieces_by_outfit.keys())
         
-        # ────────────────────────────────────────────────────────────
-        # A) NEGATIVOS MÉDIOS (trocar ~50% das peças)
-        # ────────────────────────────────────────────────────────────
-        print("\n   Gerando negativos MÉDIOS...")
-        for neg_idx in tqdm(range(num_medium), desc="Medium negatives"):
-            # Escolhe outfit base aleatório
-            base_outfit_id = self.rng.choice(outfit_ids_list)
-            base_pieces = self.pieces_by_outfit[base_outfit_id]
-            num_items = len(base_pieces)
+        for neg_idx in tqdm(range(num_positives), desc="Criando negativos"):
+            # 1. Seleciona pool_size outfits aleatórios
+            random_outfits = self.rng.choice(outfit_ids_list, size=pool_size, replace=False)
             
-            # Quantas peças trocar? ~50% (mínimo 1, máximo num_items-1)
-            num_to_replace = max(1, min(num_items - 1, num_items // 2))
+            # 2. Coleta TODAS as peças desses outfits
+            all_pieces = []
+            for outfit_id in random_outfits:
+                all_pieces.extend(self.pieces_by_outfit[outfit_id])
             
-            # Escolhe índices para substituir
-            replace_indices = self.rng.choice(num_items, 
-                                             size=num_to_replace, 
-                                             replace=False)
+            # 3. Randomiza a ordem
+            self.rng.shuffle(all_pieces)
             
-            # Cria nova lista de embeddings
-            new_embeddings = [p['embedding'].copy() for p in base_pieces]
-            replaced_pieces = []
+            # 4. Decide quantas peças terá o outfit negativo (2 a 5)
+            num_items = self.rng.randint(2, 6)  # 2 to 5 items
             
-            for idx in replace_indices:
-                # Escolhe outro outfit aleatório (diferente do base)
-                other_outfit_id = self.rng.choice(
-                    [oid for oid in outfit_ids_list if oid != base_outfit_id]
-                )
-                other_pieces = self.pieces_by_outfit[other_outfit_id]
-                
-                # Escolhe peça aleatória desse outfit
-                random_piece = self.rng.choice(other_pieces)
-                
-                # Substitui
-                new_embeddings[idx] = random_piece['embedding'].copy()
-                replaced_pieces.append({
-                    'index': int(idx),
-                    'original': base_pieces[idx]['piece_id'],
-                    'replaced_with': random_piece['piece_id']
-                })
+            # 5. Pega as primeiras N peças
+            selected_pieces = all_pieces[:num_items]
             
-            # Cria lista de piece_ids do outfit negativo
-            negative_piece_ids = [p['piece_id'] for p in base_pieces]
-            for replace_info in replaced_pieces:
-                negative_piece_ids[replace_info['index']] = replace_info['replaced_with']
+            # 6. Cria embeddings e metadados
+            embeddings = np.array([p['embedding'] for p in selected_pieces], dtype=np.float32)
+            piece_ids = [p['piece_id'] for p in selected_pieces]
             
             negative_samples.append({
-                'outfit_id': f"{base_outfit_id}_negative_medium_{neg_idx}",
-                'embeddings': np.array(new_embeddings, dtype=np.float32),
+                'outfit_id': f"negative_{neg_idx}",
+                'embeddings': embeddings,
                 'num_items': num_items,
-                'piece_ids': negative_piece_ids,
+                'piece_ids': piece_ids,
                 'is_compatible': False,
-                'negative_type': 'medium',
-                'num_replaced': num_to_replace,
-                'source_outfit': base_outfit_id,
-                'replaced_pieces': replaced_pieces
-            })
-        
-        # ────────────────────────────────────────────────────────────
-        # B) NEGATIVOS FÁCEIS (trocar 1 peça, outfit muito diferente)
-        # ────────────────────────────────────────────────────────────
-        print("\n   Gerando negativos FÁCEIS...")
-        for neg_idx in tqdm(range(num_easy), desc="Easy negatives"):
-            # Escolhe outfit base
-            base_outfit_id = self.rng.choice(outfit_ids_list)
-            base_pieces = self.pieces_by_outfit[base_outfit_id]
-            num_items = len(base_pieces)
-            
-            # Escolhe 1 índice para substituir
-            replace_idx = self.rng.choice(num_items)
-            
-            # Busca outfit "muito diferente"
-            # (simplificação: escolhe aleatório com tamanho diferente se possível)
-            candidates = [
-                oid for oid in outfit_ids_list 
-                if oid != base_outfit_id and 
-                abs(len(self.pieces_by_outfit[oid]) - num_items) >= 1
-            ]
-            
-            if not candidates:
-                # Fallback: qualquer outro outfit
-                candidates = [oid for oid in outfit_ids_list if oid != base_outfit_id]
-            
-            other_outfit_id = self.rng.choice(candidates)
-            other_pieces = self.pieces_by_outfit[other_outfit_id]
-            random_piece = self.rng.choice(other_pieces)
-            
-            # Cria nova lista
-            new_embeddings = [p['embedding'].copy() for p in base_pieces]
-            new_embeddings[replace_idx] = random_piece['embedding'].copy()
-            
-            # Cria lista de piece_ids do outfit negativo
-            negative_piece_ids = [p['piece_id'] for p in base_pieces]
-            negative_piece_ids[replace_idx] = random_piece['piece_id']
-            
-            replaced_pieces = [{
-                'index': int(replace_idx),
-                'original': base_pieces[replace_idx]['piece_id'],
-                'replaced_with': random_piece['piece_id']
-            }]
-            
-            negative_samples.append({
-                'outfit_id': f"{base_outfit_id}_negative_easy_{neg_idx}",
-                'embeddings': np.array(new_embeddings, dtype=np.float32),
-                'num_items': num_items,
-                'piece_ids': negative_piece_ids,
-                'is_compatible': False,
-                'negative_type': 'easy',
-                'num_replaced': 1,
-                'source_outfit': base_outfit_id,
-                'replaced_pieces': replaced_pieces
+                'negative_type': 'random',
+                'source_outfits': list(random_outfits),
             })
         
         print(f"\n❌ [NEGATIVOS COMPLETOS]")
-        print(f"   Médios: {num_medium}")
-        print(f"   Fáceis: {num_easy}")
+        print(f"   Random: {len(negative_samples)}")
         print(f"   TOTAL: {len(negative_samples)}")
+        print(f"   (Randomização pura - sem stratificação)")
         
         return negative_samples
     

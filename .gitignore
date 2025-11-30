@@ -21,11 +21,13 @@ site_build
 venv
 docs.zip
 archive.zip
+alembic.ini
+blindstyle.db
 
 #custom project files 
 responses/*
-chroma_db/*
-filtered_outfits/*
+backend/chroma_db/*
+backend/filtered_outfits/*
 .github/*
 .specs/*
 .context/*
@@ -34,9 +36,10 @@ TASKS.md
 memory-bank/*
 custom-instructions/*
 logs/*
-checkpoints/*
-data/*
-results/*
+backend/checkpoints/*
+backend/data/*
+backend/results/*
+backend/archive/*
 
 # vim temporary files
 *~

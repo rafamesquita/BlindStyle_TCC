@@ -19,10 +19,26 @@ PIECE_DIM = len(ATTRIBUTES) * ATTR_DIM
 # Configurações de Filtragem
 MAX_ITEMS_PER_OUTFIT = 5
 
-# Categorias válidas
+# ============================================================================
+# SISTEMA DE VALIDAÇÃO DE ATRIBUTOS
+# ============================================================================
+
+# Categorias válidas (ÚNICA RESTRIÇÃO MANTIDA)
+# Apenas "category" é restrito a estes valores exatos
 VALID_CATEGORIES = ["tops", "bottoms", "shoes", "others"]
+
+# ATENÇÃO: Listas abaixo são APENAS REFERÊNCIA HISTÓRICA
+# Valores LIVRES são aceitos na prática para estes atributos:
+# - usage, texture, print_category: podem ter qualquer valor textual
+# - item_type, primary_color: sempre foram valores livres
+
+# Lista de referência para "usage" (valores livres aceitos)
 VALID_USAGE = ["casual", "formal", "business", "sportswear", "sleepwear", "outerwear", "party", "workwear"]
+
+# Lista de referência para "texture" (valores livres aceitos)
 VALID_TEXTURE = ["cotton", "denim", "leather", "polyester", "wool", "silk", "linen", "knit", "suede", "nylon", "fleece", "velvet", "mesh", "others"]
+
+# Lista de referência para "print_category" (valores livres aceitos)
 VALID_PRINT = ["striped", "animal", "floral", "plaid", "plain", "abstract", "logo", "graphic"]
 
 # Prompt para extração de features
@@ -42,27 +58,13 @@ others (if the image contains multiple items or a single item cannot be clearly 
 
 For images classified as tops, bottoms, or shoes, identify and describe the following characteristics using the specified values below:
 
-item_type: type of the piece (free text, based on the image observation, generalize to avoid outliers)
-primary_color: predominant color (free text, generalize to avoid outliers )
-usage: intended use (see enum below)
-texture: type of fabric or material (see enum below)
-print_category: main pattern or print (see enum below)
+item_type: type of the piece (free text, be specific but avoid outliers - e.g., "blouse", "sleeveless blouse", "bikini top")
+primary_color: predominant color (free text, use common color names - e.g., "peach", "beige", "dark blue")
+usage: intended use (free text, can reference: casual, formal, business, sportswear, sleepwear, outerwear, party, workwear)
+texture: type of fabric or material (free text, can reference: cotton, denim, leather, polyester, wool, silk, linen, knit, suede, nylon, fleece, velvet, mesh)
+print_category: main pattern or print (free text, can reference: striped, animal, floral, plaid, plain, abstract, logo, graphic)
 
 Return the results in JSON format, where the key is the filename of the image and the value is an object with the classification and attributes.
-
-Available enums:
-
-category:
-{VALID_CATEGORIES}
-
-usage:
-{VALID_USAGE}
-
-texture:
-{VALID_TEXTURE}
-
-print_category:
-{VALID_PRINT}
 
 Output example:
 {{
@@ -85,3 +87,5 @@ if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY não encontrada nas variáveis de ambiente. Crie um arquivo .env com a chave.")
 
 LLM_MODEL = "gemini-2.5-pro"
+
+IMAGES_DIR = BASE_DIR / "archive" / "images"

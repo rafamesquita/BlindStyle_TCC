@@ -1,19 +1,16 @@
 """
-MCN (Multi-Correlation Network) Model for Outfit Compatibility
+Módulo PyTorch Model para Compatibilidade de Outfits
 
-This module implements the MCN architecture based on Wang et al. (2019):
-"Outfit Compatibility Prediction and Diagnosis with Multi-Layered Comparison Network"
-
-Architecture:
-1. Feature Projection: Projects 96-D embeddings to 1000-D space
-2. Pairwise Comparisons: Computes similarity between all item pairs with learnable masks
-3. Compatibility Predictor: MLP that predicts final compatibility score
+Contém a arquitetura MCN (Multi-Correlation Network) e funções de predição
+para inferência em produção.
 """
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Tuple
+import numpy as np
+from pathlib import Path
+from typing import Dict, Tuple, Optional
 
 
 class OutfitCompatibilityModel(nn.Module):
@@ -185,71 +182,189 @@ def create_model(config: dict) -> OutfitCompatibilityModel:
         dropout=config.get('dropout', 0.3)
     )
 
-    print(f"\n🔧 MCN Model Created:")
-    print(f"  Input dimension: {model.embed_input_size}")
-    print(f"  Projection dimension: {model.embed_proj_size}")
-    print(f"  Max items: {model.max_items}")
-    print(f"  Number of pairs: {model.num_pairs}")
-    print(f"  Total parameters: {model.get_num_parameters():,}")
-    print(f"  Trainable parameters: {model.get_trainable_parameters():,}")
-    print(f"  Dropout rate: {model.dropout}")
-
     return model
 
 
-if __name__ == "__main__":
-    """Test the model implementation"""
-    print("🧪 Testing OutfitCompatibilityModel...\n")
+class ModelPredictor:
+    """
+    Classe para carregar e executar predições do modelo MCN
+    """
     
-    # Create dummy data
-    batch_size = 4
-    max_items = 5
-    embed_size = 96
+    def __init__(
+        self,
+        checkpoint_path: str,
+        device: Optional[str] = None,
+        config: Optional[Dict] = None
+    ):
+        """
+        Inicializa o preditor do modelo
+        
+        Args:
+            checkpoint_path: Caminho relativo ao checkpoint do modelo (.pth)
+            device: Device para predição ('cpu' ou 'cuda'). Se None, detecta automaticamente
+            config: Configuração do modelo (se None, usa defaults)
+        """
+        # Path relativo a partir do módulo backend
+        module_dir = Path(__file__).parent
+        self.checkpoint_path = module_dir / checkpoint_path
+        
+        if not self.checkpoint_path.exists():
+            raise FileNotFoundError(f"Checkpoint não encontrado: {self.checkpoint_path}")
+        
+        # Detecta device automaticamente se não especificado
+        if device is None:
+            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        else:
+            self.device = device
+        
+        # Configuração padrão do modelo
+        self.config = config or {
+            'embed_input_size': 96,
+            'embed_proj_size': 1000,
+            'max_items': 5,
+            'dropout': 0.3
+        }
+        
+        # Carrega o modelo
+        self.model = self._load_model()
+        
+    def _load_model(self) -> nn.Module:
+        """
+        Carrega o modelo do checkpoint
+        
+        Returns:
+            Modelo carregado em modo de avaliação
+        """
+        # Cria arquitetura do modelo
+        model = create_model(self.config)
+        
+        # Carrega pesos do checkpoint
+        checkpoint = torch.load(
+            self.checkpoint_path,
+            map_location=self.device,
+            weights_only=False
+        )
+        
+        model.load_state_dict(checkpoint['model_state_dict'])
+        
+        # Move para device e modo de avaliação
+        model.to(self.device)
+        model.eval()
+        
+        print(f"✅ Modelo carregado de: {self.checkpoint_path.name}")
+        print(f"  Device: {self.device}")
+        print(f"  Época: {checkpoint.get('epoch', 'N/A')}")
+        print(f"  AUC de validação: {checkpoint.get('best_val_auc', 'N/A'):.4f}")
+        
+        return model
     
-    # Simulate batch with different outfit sizes
-    embeddings = torch.randn(batch_size, max_items, embed_size)
+    def predict_single(
+        self,
+        embeddings: np.ndarray,
+        mask: np.ndarray
+    ) -> float:
+        """
+        Executa predição para um único outfit
+        
+        Args:
+            embeddings: Array (max_items, 96) com embeddings das peças
+            mask: Array (max_items,) boolean indicando peças válidas
+            
+        Returns:
+            Score de compatibilidade entre 0 e 1
+        """
+        # Converte para tensores PyTorch e adiciona dimensão de batch
+        embeddings_tensor = torch.from_numpy(embeddings).unsqueeze(0).to(self.device)
+        mask_tensor = torch.from_numpy(mask).unsqueeze(0).to(self.device)
+        
+        # Inferência
+        with torch.no_grad():
+            output = self.model(embeddings_tensor, mask_tensor)
+        
+        # Extrai score (remove dimensão de batch e converte para float)
+        score = output.squeeze().item()
+        
+        return score
     
-    # Create masks (simulate outfits with 2, 3, 4, 5 items)
-    mask = torch.zeros(batch_size, max_items, dtype=torch.bool)
-    mask[0, :2] = True  # 2 items
-    mask[1, :3] = True  # 3 items
-    mask[2, :4] = True  # 4 items
-    mask[3, :5] = True  # 5 items
+    def predict_batch(
+        self,
+        batch_inputs: Dict[str, Tuple[np.ndarray, np.ndarray, int]]
+    ) -> Dict[str, float]:
+        """
+        Executa predição em batch para múltiplos outfits
+        
+        Args:
+            batch_inputs: Dict {outfit_id: (embeddings, mask, num_items)}
+            
+        Returns:
+            Dict {outfit_id: compatibility_score}
+        """
+        scores = {}
+        
+        for outfit_id, (embeddings, mask, num_items) in batch_inputs.items():
+            score = self.predict_single(embeddings, mask)
+            scores[outfit_id] = score
+        
+        return scores
     
-    print(f"Input shapes:")
-    print(f"  Embeddings: {embeddings.shape}")
-    print(f"  Mask: {mask.shape}")
-    print(f"  Mask values:\n{mask}")
+    def get_top_k_outfits(
+        self,
+        scores: Dict[str, float],
+        k: int = 3,
+        min_threshold: float = 0.8
+    ) -> Dict[str, float]:
+        """
+        Retorna os top-k outfits acima de um limiar mínimo
+        
+        Args:
+            scores: Dict {outfit_id: score}
+            k: Número de top outfits a retornar
+            min_threshold: Score mínimo para considerar (default: 0.8)
+            
+        Returns:
+            Dict {outfit_id: score} com no máximo k outfits acima do limiar,
+            ordenados por score decrescente
+        """
+        # Filtra scores acima do limiar
+        filtered_scores = {
+            outfit_id: score
+            for outfit_id, score in scores.items()
+            if score >= min_threshold
+        }
+        
+        # Ordena por score decrescente e pega top-k
+        sorted_scores = dict(
+            sorted(
+                filtered_scores.items(),
+                key=lambda item: item[1],
+                reverse=True
+            )[:10]
+        )
+        
+        return sorted_scores
+
+
+# Singleton para cache do modelo (evita recarregar a cada requisição)
+_model_cache: Optional[ModelPredictor] = None
+
+
+def get_model_predictor(
+    checkpoint_path: str = "../checkpoints/best_model.pth",
+    force_reload: bool = False
+) -> ModelPredictor:
+    """
+    Obtém instância singleton do preditor do modelo
     
-    # Create model
-    config = {
-        'embed_input_size': 96,
-        'embed_proj_size': 1000,
-        'max_items': 5,
-        'dropout': 0.3
-    }
+    Args:
+        checkpoint_path: Caminho relativo para o checkpoint (default: ../checkpoints/best_model.pth)
+        force_reload: Se True, força recarregamento do modelo
+        
+    Returns:
+        Instância de ModelPredictor (cached)
+    """
+    global _model_cache
     
-    model = create_model(config)
+    if _model_cache is None or force_reload:
+        _model_cache = ModelPredictor(checkpoint_path)
     
-    # Forward pass
-    print(f"\n🔄 Running forward pass...")
-    model.eval()
-    with torch.no_grad():
-        outputs = model(embeddings, mask)
-    
-    print(f"\nOutput shape: {outputs.shape}")
-    print(f"Output values: {outputs}")
-    print(f"Output range: [{outputs.min():.4f}, {outputs.max():.4f}]")
-    
-    # Test gradients
-    print(f"\n🔄 Testing gradient flow...")
-    model.train()
-    outputs = model(embeddings, mask)
-    loss = outputs.mean()
-    loss.backward()
-    
-    # Check if gradients exist
-    has_grads = all(p.grad is not None for p in model.parameters() if p.requires_grad)
-    print(f"  All parameters have gradients: {has_grads}")
-    
-    print("\n✅ Model test passed!")
+    return _model_cache

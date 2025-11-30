@@ -5,52 +5,64 @@ from typing import Dict, List, Optional, Tuple
 import hashlib
 from modules.config import (
     FILTERED_DIR,
-    VALID_CATEGORIES,
-    VALID_USAGE,
     ATTRIBUTES,
     ATTR_DIM,
-    VALID_TEXTURE,
-    VALID_PRINT
 )
 from .vector_db import VectorDB
 
 class EmbeddingGenerator:
     def __init__(self, vector_db: Optional[VectorDB] = None):
         """Inicializa o gerador de embeddings"""
-        self.attribute_values = {
-            "category": VALID_CATEGORIES,
-            "usage": VALID_USAGE,
-            "texture": VALID_TEXTURE,
-            "print_category": VALID_PRINT
-        }
         self.vector_db = vector_db
     
     def _hash_embedding(self, text: str, dim: int = 16) -> np.ndarray:
+        """
+        Gera embedding determinístico baseado em hash MD5
+        
+        Args:
+            text: Texto para gerar embedding (formato: "atributo:valor")
+            dim: Dimensão do embedding (default: 16)
+        
+        Returns:
+            np.ndarray: Embedding normalizado em float32
+        """
         # Create a deterministic seed from md5 hash
         md5 = hashlib.md5(text.encode("utf-8")).hexdigest()
         seed = int(md5[:8], 16)  # use first 8 hex digits as integer
 
         rng = np.random.default_rng(seed)
         vec = rng.standard_normal(dim)
-        return vec / np.linalg.norm(vec)
+        normalized = vec / np.linalg.norm(vec)
+        # Garantir float32 para consistência
+        return normalized.astype(np.float32)
     
     
 
     def _generate_piece_embedding(self, piece_data: Dict) -> np.ndarray:
-        """Gera embedding para uma peça de roupa"""
+        """
+        Gera embedding para uma peça de roupa
+        
+        CORREÇÃO: Todos os 6 atributos sempre geram embeddings únicos
+        - category, item_type, primary_color, usage, texture, print_category
+        - Cada um gera um vetor de dimensão ATTR_DIM (16)
+        - Total: 6 × 16 = 96 dimensões
+        
+        Args:
+            piece_data: Dicionário com atributos da peça
+        
+        Returns:
+            np.ndarray: Embedding concatenado (96,) em float32
+        """
         embeddings = []
         
         # Processa cada atributo definido
         for attr in ATTRIBUTES:
-            if attr in self.attribute_values:
-                # Usa one-hot para atributos categóricos
-                value = piece_data.get(attr, "UNK")
-                encoding = self._hash_embedding(f"{attr}:{value}", ATTR_DIM)
-            
+            value = piece_data.get(attr, "UNK")
+            encoding = self._hash_embedding(f"{attr}:{value}", ATTR_DIM)
             embeddings.append(encoding)
         
-        # Concatena todos os embeddings de atributos
-        return np.concatenate(embeddings)
+        # Concatena todos os embeddings de atributos e garante float32
+        return np.concatenate(embeddings).astype(np.float32)
 
     def _process_outfit(self, outfit_data: Dict, file_name: str) -> Tuple[List[np.ndarray], List[str]]:
         """Processa um outfit gerando embeddings e metadados para cada peça"""

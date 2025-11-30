@@ -25,6 +25,7 @@ import numpy as np
 import yaml
 import argparse
 from datetime import datetime
+from collections import Counter
 
 from models.compat_model import create_model
 from models.dataset import get_dataloaders
@@ -70,6 +71,13 @@ def parse_args():
         help='Output directory for results and plots'
     )
     
+    parser.add_argument(
+        '--threshold',
+        type=float,
+        default=0.5,
+        help='Decision threshold for classification (default: 0.5, use optimize_threshold.py to find optimal)'
+    )
+    
     return parser.parse_args()
 
 
@@ -88,8 +96,16 @@ def load_checkpoint(model, checkpoint_path: str, device: str):
     return model
 
 
-def evaluate_model(model, test_loader, device: str):
-    """Evaluate model on test set"""
+def evaluate_model(model, test_loader, device: str, threshold: float = 0.5):
+    """
+    Evaluate model on test set
+    
+    Args:
+        model: PyTorch model
+        test_loader: DataLoader for test set
+        device: Device to run on ('cuda' or 'cpu')
+        threshold: Decision threshold for binary classification (default: 0.5)
+    """
     model.eval()
     model.to(device)
     
@@ -119,9 +135,9 @@ def evaluate_model(model, test_loader, device: str):
             # Forward pass
             outputs = model(embeddings, mask)
             
-            # Collect results
+            # Collect results (apply threshold for predictions)
             batch_probs = outputs.cpu().numpy()
-            batch_preds = (outputs > 0.5).cpu().numpy()
+            batch_preds = (outputs > threshold).cpu().numpy()
             batch_labels = labels.cpu().numpy()
             batch_outfit_ids = batch['outfit_id']
             batch_num_items = num_items.numpy()
@@ -303,22 +319,38 @@ def save_sample_predictions(samples_by_category: dict, output_dir: Path, num_sam
                 'fp': 'False Positives - Wrongly predicted compatible',
                 'fn': 'False Negatives - Wrongly predicted incompatible'
             },
-            'num_samples_per_category': num_samples
+            'num_samples_per_category': num_samples,
+            'additional_mode_samples': num_samples,
+            'mode_rounding': 'Probabilities binned to 0.1 intervals (floor) for mode calculation'
         },
         'samples': {}
     }
     
     # Add samples for each category
     for cat_key, samples in samples_by_category.items():
-        # Sort by confidence
+        # Sort by confidence for top samples
         sorted_samples = sorted(samples, key=lambda x: x['probability'], reverse=True)
         
-        # Take top N
+        # Take top N for confidence
         top_samples = sorted_samples[:num_samples]
+        
+        # Find mode probability (binned to 0.1 intervals)
+        if samples:
+            import math
+            binned_probs = [math.floor(s['probability'] * 10) / 10 for s in samples]
+            mode_binned = Counter(binned_probs).most_common(1)[0][0]
+            
+            # Get samples with mode binned probability
+            mode_samples = [s for s in samples if math.floor(s['probability'] * 10) / 10 == mode_binned][:num_samples]
+        else:
+            mode_samples = []
+            mode_binned = None
         
         json_data['samples'][cat_key] = {
             'total_count': len(samples),
-            'top_samples': top_samples
+            'top_samples': top_samples,
+            'mode_samples': mode_samples,
+            'mode_binned_probability': mode_binned
         }
     
     # Save to JSON
@@ -328,16 +360,16 @@ def save_sample_predictions(samples_by_category: dict, output_dir: Path, num_sam
     
     print(f"  💾 Sample predictions saved: {output_path}")
 
-
-def plot_sample_predictions(samples_by_category: dict, output_dir: Path):
+def plot_sample_predictions(samples_by_category: dict, output_dir: Path, threshold: float = 0.5):
     """
     Create visualization showing confidence distribution for each category
     
     Args:
         samples_by_category: Dict with keys 'tp', 'tn', 'fp', 'fn'
         output_dir: Directory to save the plot
+        threshold: Decision threshold used for classification
     """
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     fig.suptitle('Prediction Confidence Distribution by Category', fontsize=16, fontweight='bold')
     
     categories = [
@@ -359,24 +391,82 @@ def plot_sample_predictions(samples_by_category: dict, output_dir: Path):
             continue
         
         # Extract probabilities
-        probs = [s['probability'] for s in samples]
+        probs = np.array([s['probability'] for s in samples])
         
-        # Create histogram
-        ax.hist(probs, bins=20, color=color, alpha=0.7, edgecolor='black')
+        # Determine optimal x-axis range for better visualization
+        # For high thresholds (>0.9), focus on the relevant range
+        if threshold > 0.9:
+            # For TP and FP (predicted positive), zoom into high probability region
+            if cat_key in ['tp', 'fp']:
+                x_min = max(0.5, threshold - 0.15)
+                x_max = 1.0
+                bins = np.linspace(x_min, x_max, 30)
+            # For TN and FN, show full range but with more bins
+            else:
+                x_min = 0.0
+                x_max = 1.0
+                bins = 40
+        else:
+            # Standard view for lower thresholds
+            x_min = 0.0
+            x_max = 1.0
+            bins = 20
         
-        # Add threshold line
-        ax.axvline(x=0.5, color='black', linestyle='--', linewidth=2, label='Threshold (0.5)')
+        # Create histogram with adaptive binning
+        if isinstance(bins, np.ndarray):
+            counts, edges, patches = ax.hist(probs, bins=bins, color=color, alpha=0.7, edgecolor='black', linewidth=1.2)
+        else:
+            counts, edges, patches = ax.hist(probs, bins=bins, color=color, alpha=0.7, edgecolor='black', linewidth=1.2)
+        
+        # Add threshold line (only if within visible range)
+        if x_min <= threshold <= x_max:
+            ax.axvline(x=threshold, color='black', linestyle='--', linewidth=2.5, 
+                      label=f'Threshold: {threshold:.3f}', zorder=10)
         
         # Add statistics
         mean_prob = np.mean(probs)
-        ax.axvline(x=mean_prob, color='darkred', linestyle='-', linewidth=2, label=f'Mean: {mean_prob:.3f}')
+        median_prob = np.median(probs)
         
-        ax.set_title(f"{cat_title}\n({len(samples)} samples)", fontweight='bold')
-        ax.set_xlabel('Predicted Probability', fontsize=10)
-        ax.set_ylabel('Frequency', fontsize=10)
-        ax.legend(fontsize=8)
+        # Show mean if within range
+        if x_min <= mean_prob <= x_max:
+            ax.axvline(x=mean_prob, color='darkred', linestyle='-', linewidth=2, 
+                      label=f'Mean: {mean_prob:.3f}', zorder=10)
+        
+        # Show median if within range
+        if x_min <= median_prob <= x_max:
+            ax.axvline(x=median_prob, color='purple', linestyle=':', linewidth=2, 
+                      label=f'Median: {median_prob:.3f}', zorder=10)
+        
+        # Add percentile annotations for high threshold cases
+        if threshold > 0.9 and cat_key in ['tp', 'fp']:
+            p10 = np.percentile(probs, 10)
+            p90 = np.percentile(probs, 90)
+            if x_min <= p10 <= x_max:
+                ax.axvline(x=p10, color='gray', linestyle=':', linewidth=1.5, alpha=0.6, 
+                          label=f'P10: {p10:.3f}')
+            if x_min <= p90 <= x_max:
+                ax.axvline(x=p90, color='gray', linestyle=':', linewidth=1.5, alpha=0.6, 
+                          label=f'P90: {p90:.3f}')
+        
+        # Add text annotation with detailed stats
+        stats_text = f"n={len(samples)}\n"
+        stats_text += f"min={np.min(probs):.3f}\n"
+        stats_text += f"max={np.max(probs):.3f}\n"
+        stats_text += f"std={np.std(probs):.3f}"
+        
+        ax.text(0.02, 0.98, stats_text, transform=ax.transAxes,
+               fontsize=9, verticalalignment='top',
+               bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+        
+        ax.set_title(f"{cat_title}\n({len(samples)} samples)", fontweight='bold', fontsize=11)
+        ax.set_xlabel('Predicted Probability', fontsize=10, fontweight='bold')
+        ax.set_ylabel('Frequency', fontsize=10, fontweight='bold')
+        ax.legend(fontsize=8, loc='upper right' if cat_key in ['tn', 'fn'] else 'upper left')
         ax.grid(True, alpha=0.3)
-        ax.set_xlim(0, 1)
+        ax.set_xlim(x_min, x_max)
+        
+        # Set y-axis to start from 0 for better comparison
+        ax.set_ylim(bottom=0)
     
     plt.tight_layout()
     
@@ -413,7 +503,7 @@ def plot_confusion_matrix(cm, output_dir: Path):
     print(f"  💾 Confusion matrix saved: {output_path}")
 
 
-def plot_probability_distribution(probs, labels, output_dir: Path):
+def plot_probability_distribution(probs, labels, output_dir: Path, threshold: float = 0.5):
     """Plot distribution of predicted probabilities"""
     plt.figure(figsize=(10, 6))
     
@@ -436,7 +526,8 @@ def plot_probability_distribution(probs, labels, output_dir: Path):
     )
     
     # Add vertical line at threshold
-    plt.axvline(x=0.5, color='black', linestyle='--', linewidth=2, label='Threshold (0.5)')
+    plt.axvline(x=threshold, color='black', linestyle='--', linewidth=2, 
+               label=f'Threshold ({threshold:.3f})')
     
     plt.xlabel('Predicted Probability', fontsize=12)
     plt.ylabel('Frequency', fontsize=12)
@@ -520,6 +611,9 @@ def main():
     # Determine device
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"💻 Using device: {device.upper()}")
+    print(f"🎯 Decision threshold: {args.threshold:.3f}")
+    if args.threshold != 0.5:
+        print(f"   (Using custom threshold - default is 0.5)")
     
     # Create output directory
     output_dir = Path(args.output)
@@ -542,7 +636,7 @@ def main():
     model = load_checkpoint(model, args.checkpoint, device)
     
     # Evaluate
-    results = evaluate_model(model, test_loader, device)
+    results = evaluate_model(model, test_loader, device, threshold=args.threshold)
     
     # Display sample predictions
     display_sample_predictions(
@@ -556,7 +650,8 @@ def main():
     plot_probability_distribution(
         results['probabilities'],
         results['labels'],
-        output_dir
+        output_dir,
+        threshold=args.threshold
     )
     plot_roc_curve(
         results['labels'],
@@ -575,7 +670,8 @@ def main():
     # Plot sample predictions distribution
     plot_sample_predictions(
         results['samples_by_category'],
-        output_dir
+        output_dir,
+        threshold=args.threshold
     )
     
     # Save metrics
@@ -585,10 +681,12 @@ def main():
     print(f"\n" + "✅"*35)
     print("EVALUATION COMPLETED!")
     print("✅"*35)
-    print(f"\n📊 Results summary:")
-    print(f"  Accuracy: {results['accuracy']:.4f}")
-    print(f"  AUC:      {results['auc']:.4f}")
-    print(f"  F1-Score: {results['f1']:.4f}")
+    print(f"\n📊 Results summary (threshold={args.threshold:.3f}):")
+    print(f"  Accuracy:  {results['accuracy']:.4f}")
+    print(f"  Precision: {results['precision']:.4f}")
+    print(f"  Recall:    {results['recall']:.4f}")
+    print(f"  AUC:       {results['auc']:.4f}")
+    print(f"  F1-Score:  {results['f1']:.4f}")
     print(f"\n📁 All results saved to: {output_dir}/")
     print(f"  - metrics.txt")
     print(f"  - confusion_matrix.png")

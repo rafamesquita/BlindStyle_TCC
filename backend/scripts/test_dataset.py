@@ -3,9 +3,6 @@ Script de Teste para Dataset Gerado
 =====================================
 
 Valida que o dataset foi gerado corretamente e pode ser carregado.
-
-Autor: Blind Style Model Team
-Data: 2025-10-15
 """
 
 import numpy as np
