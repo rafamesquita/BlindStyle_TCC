@@ -24,10 +24,7 @@ archive.zip
 alembic.ini
 blindstyle.db
 
-#custom project files 
-responses/*
-backend/chroma_db/*
-backend/filtered_outfits/*
+#custom project files  
 .github/*
 .specs/*
 .context/*
@@ -36,10 +33,34 @@ TASKS.md
 memory-bank/*
 custom-instructions/*
 logs/*
+
+### Backend
+backend/responses/*
+backend/chroma_db/*
+backend/filtered_outfits/*
 backend/checkpoints/*
 backend/data/*
 backend/results/*
 backend/archive/*
+
+### Mobile
+**/doc/api/
+**/ios/Flutter/.last_build_id
+frontendmobile/dart_tool/
+frontendmobile/flutter-plugins
+frontendmobile/flutter-plugins-dependencies
+frontendmobile/pub-cache/
+frontendmobile/pub/
+frontendmobile/build/
+frontendmobile/app.*.symbols
+frontendmobile/app.*.map.json
+frontendmobile/android/app/debug
+frontendmobile/android/app/profile
+frontendmobile/android/app/release
+frontendmobile/linux/*
+frontendmobile/macos/*
+frontendmobile/web/*
+frontendmobile/windows/*
 
 # vim temporary files
 *~

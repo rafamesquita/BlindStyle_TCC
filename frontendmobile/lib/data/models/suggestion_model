@@ -1,0 +1,19 @@
+class SuggestedPiece {
+  final String pieceId;
+  final String base64;
+
+  SuggestedPiece({
+    required this.pieceId,
+    required this.base64,
+  });
+}
+
+class SuggestedOutfit {
+  final String outfitId;
+  final List<SuggestedPiece> pieces;
+
+  SuggestedOutfit({
+    required this.outfitId,
+    required this.pieces,
+  });
+}
