@@ -10,7 +10,7 @@ import { environment } from '../../environments/environments';
 export class AuthService {
   
   private apiUrl = `${environment.apiUrl}/api/v1/users`;
-  private refreshTokenUrl = `${this.apiUrl}/refresh_token`;
+  private refreshTokenUrl = `${this.apiUrl}/refresh-token`;
   private refreshInterval: any;
 
   constructor(
