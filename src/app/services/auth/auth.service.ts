@@ -11,6 +11,7 @@ export class AuthService {
   
   private apiUrl = `${environment.apiUrl}/api/v1/users`;
   private refreshTokenUrl = `${this.apiUrl}/refresh_token`;
+  private refreshInterval: any;
 
   constructor(
     private http: HttpClient,
@@ -25,9 +26,24 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
       switchMap((response) => {
         this.storeTokens(response.access_token, response.refresh_token);
+         this.startAutoRefresh();
         return of(response);
       }),
     catchError(this.handleError));
+  }
+
+  startAutoRefresh() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+
+    // 5 minutos = 300.000 ms
+    this.refreshInterval = setInterval(() => {
+      this.refreshAccessToken().subscribe({
+        next: (res) => console.log("Token atualizado", res),
+        error: (err) => console.error("Erro ao atualizar token", err)
+      });
+    }, 300000);
   }
 
   refreshAccessToken(): Observable<any> {
@@ -49,6 +65,9 @@ export class AuthService {
 
   logout(): void {
     localStorage.clear();
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
   private storeTokens(accessToken: string, refreshToken: string): void {

@@ -26,10 +26,11 @@
 .grid-container {
   padding-top: 20px;
   padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
   display: grid;
   overflow: auto;
   gap: 20px;
-  width: 100%;
   max-width: 900px;
   grid-template-columns: repeat(3, 1fr);
   
